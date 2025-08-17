@@ -915,19 +915,19 @@ section {
 
 .timeline {
     position: relative;
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
+    padding-left: 4rem;
 }
 
 .timeline::before {
     content: '';
     position: absolute;
-    left: 50%;
+    left: 0;
     top: 0;
     bottom: 0;
-    width: 2px;
-    background: var(--primary);
-    transform: translateX(-50%);
+    width: 3px;
+    background: linear-gradient(to bottom, var(--primary), var(--accent));
 }
 
 .timeline-item {
@@ -937,67 +937,46 @@ section {
 
 .timeline-marker {
     position: absolute;
-    left: 50%;
-    top: 0;
-    width: 20px;
-    height: 20px;
+    left: -1.5rem;
+    top: 50%;
+    width: 1.2rem;
+    height: 1.2rem;
     background: var(--primary);
     border-radius: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
+    border: 4px solid var(--bg-primary);
+    box-shadow: 0 0 0 3px var(--primary);
+    transform: translateY(-50%);
 }
 
 .timeline-content {
     position: relative;
-    width: 45%;
-    padding: 2rem;
-    background: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    transition: var(--transition);
+    width: 100%;
+    padding: 2.5rem;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
-.timeline-item:nth-child(odd) .timeline-content {
-    left: 0;
+.timeline-content:hover {
+    transform: translateX(5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary);
 }
 
-.timeline-item:nth-child(even) .timeline-content {
-    left: 55%;
-}
 
-.timeline-item:nth-child(odd) .timeline-content::after {
-    content: '';
-    position: absolute;
-    right: -10px;
-    top: 20px;
-    width: 0;
-    height: 0;
-    border-left: 10px solid var(--bg-tertiary);
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-}
-
-.timeline-item:nth-child(even) .timeline-content::after {
-    content: '';
-    position: absolute;
-    left: -10px;
-    top: 20px;
-    width: 0;
-    height: 0;
-    border-right: 10px solid var(--bg-tertiary);
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-}
 
 .timeline-header h3 {
-    color: var(--primary);
+    color: white;
     margin-bottom: 0.5rem;
 }
 
 .company {
     display: block;
-    color: var(--text-secondary);
-    font-weight: 500;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 1.1rem;
     margin-bottom: 0.25rem;
 }
 
