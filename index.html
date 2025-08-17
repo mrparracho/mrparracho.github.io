@@ -73,7 +73,7 @@
                     </span>
                 </h1>
                 <p class="hero-description">
-                    Building the next-generation of AI-powered platforms.<br />
+                    Building the next-generation of AI-powered systems.<br />
                     Passionate about innovation and driving business value through technology.
                 </p>
                 <div class="hero-buttons">
@@ -82,20 +82,9 @@
                 </div>
             </div>
             <div class="hero-visual">
-                <div class="neural-network-animation">
-                    <div class="network-container">
-                        <div class="network-node" data-layer="1"></div>
-                        <div class="network-node" data-layer="1"></div>
-                        <div class="network-node" data-layer="1"></div>
-                        <div class="network-node" data-layer="2"></div>
-                        <div class="network-node" data-layer="2"></div>
-                        <div class="network-node" data-layer="3"></div>
-                        <div class="network-connection"></div>
-                        <div class="network-connection"></div>
-                        <div class="network-connection"></div>
-                        <div class="network-connection"></div>
-                        <div class="network-connection"></div>
-                    </div>
+                <div class="ai-sphere-container">
+                    <div id="threejs-container"></div>
+                    <div class="sphere-label">AI Assistant</div>
                 </div>
             </div>
         </div>
@@ -395,6 +384,7 @@
 
     <!-- Scripts -->
     <script src="static/js/particles.min.js"></script>
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <script src="static/js/main.js"></script>
 </body>
 </html>
