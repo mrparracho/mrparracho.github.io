@@ -76,7 +76,7 @@ function initNavigation() {
 // Typing Effect
 function initTypingEffect() {
     const typingText = document.getElementById('typing-text');
-    const words = ['Tech Lead', 'Data Engineer', 'Machine Learning Engineer', 'AI Specialist', 'Solutions Architect', 'Problem Solver'];
+    const words = [ 'Data Lead', 'Machine Learning Engineer', 'AI Researcher', 'Solutions Architect'];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
