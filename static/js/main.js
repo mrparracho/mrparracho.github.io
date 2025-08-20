@@ -1,15 +1,30 @@
 // Main JavaScript for Portfolio Website
+console.log('=== SCRIPT LOADED ===');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOM CONTENT LOADED ===');
+    console.log('Initializing portfolio website...');
+    
+
+    
     // Initialize all functionality
     initLoadingScreen();
     initNavigation();
     initTypingEffect();
     initScrollAnimations();
     initSkillBars();
-    loadProjects();
+    
+    // Test projects loading with a simple approach
+    setTimeout(() => {
+        console.log('Testing projects loading...');
+        loadProjects();
+    }, 1000);
+    
     initContactForm();
     initParticles();
     initAISphere();
+    
+    console.log('=== ALL INITIALIZATION COMPLETE ===');
 });
 
 // Loading Screen
@@ -158,31 +173,66 @@ function initSkillBars() {
 // Load Projects
 async function loadProjects() {
     try {
-        const response = await fetch('projects.json');
-        const data = await response.json();
+        console.log('=== LOADING PROJECTS ===');
         
+        // Check if projects-grid element exists
         const projectsGrid = document.getElementById('projects-grid');
+        if (!projectsGrid) {
+            throw new Error('Projects grid element not found');
+        }
+        console.log('Projects grid found:', projectsGrid);
         
-        data.projects.forEach(project => {
+        // Fetch projects.json
+        console.log('Fetching projects.json...');
+        const response = await fetch('projects.json');
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Projects data loaded:', data);
+        console.log('Number of projects:', data.projects.length);
+        
+        // Clear existing content (including the "Coming Soon" card)
+        console.log('Clearing existing content...');
+        projectsGrid.innerHTML = '';
+        
+        // Create and append project cards
+        data.projects.forEach((project, index) => {
+            console.log(`Creating project card ${index + 1}:`, project.title);
             const projectCard = createProjectCard(project);
             projectsGrid.appendChild(projectCard);
+            console.log(`Project card ${index + 1} added to DOM`);
         });
+        
+        console.log('=== PROJECTS LOADED SUCCESSFULLY ===');
+        
     } catch (error) {
-        console.error('Error loading projects:', error);
+        console.error('=== ERROR LOADING PROJECTS ===');
+        console.error('Error details:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
         // Fallback: show error message
         const projectsGrid = document.getElementById('projects-grid');
-        projectsGrid.innerHTML = `
-            <div class="error-message">
-                <p>Unable to load projects. Please check back later.</p>
-            </div>
-        `;
+        if (projectsGrid) {
+            projectsGrid.innerHTML = `
+                <div class="error-message" style="color: red; padding: 20px; text-align: center;">
+                    <h3>Error Loading Projects</h3>
+                    <p>${error.message}</p>
+                    <p>Please check the console for more details.</p>
+                </div>
+            `;
+        }
     }
 }
 
 // Create Project Card
 function createProjectCard(project) {
     const card = document.createElement('div');
-    card.className = 'project-card scroll-animate';
+    card.className = 'project-card';
     
     const skillsHTML = project.skills.map(skill => 
         `<span class="project-skill">

@@ -1,6 +1,19 @@
 {
   "projects": [
     {
+      "title": "MNIST Digit Classifier",
+      "description": "A deep learning model that accurately classifies handwritten digits from the MNIST dataset using convolutional neural networks. Achieves 99%+ accuracy with real-time prediction capabilities.",
+      "repoUrl": "https://github.com/mrparracho/mnist-classifier",
+      "liveUrl": "https://mnist-demo.example.com",
+      "imageUrl": "static/images/projects/placeholder.svg",
+      "skills": [
+        {"name": "Python", "icon": "devicon-python-plain"},
+        {"name": "PyTorch", "icon": "devicon-pytorch-original"},
+        {"name": "TensorFlow", "icon": "devicon-tensorflow-original"},
+        {"name": "Scikit-Learn", "icon": "fas fa-brain"}
+      ]
+    },
+    {
       "title": "AI-Powered Data Pipeline",
       "description": "Built a scalable ETL pipeline using Apache Spark and machine learning for real-time data processing. Reduced processing time by 60% and improved data quality.",
       "repoUrl": "https://github.com/mrparracho/data-pipeline",
@@ -63,19 +76,6 @@
         {"name": "Python", "icon": "devicon-python-plain"},
         {"name": "PostgreSQL", "icon": "devicon-postgresql-plain"},
         {"name": "D3.js", "icon": "fas fa-chart-line"}
-      ]
-    },
-    {
-      "title": "Automated Testing Framework",
-      "description": "Developed a comprehensive testing framework for data pipelines and ML models. Increased test coverage to 95% and reduced bug reports by 70%.",
-      "repoUrl": "https://github.com/mrparracho/testing-framework",
-      "liveUrl": "https://tests.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
-      "skills": [
-        {"name": "Python", "icon": "devicon-python-plain"},
-        {"name": "Pytest", "icon": "fas fa-vial"},
-        {"name": "Jenkins", "icon": "devicon-jenkins-plain"},
-        {"name": "Selenium", "icon": "fas fa-robot"}
       ]
     }
   ]

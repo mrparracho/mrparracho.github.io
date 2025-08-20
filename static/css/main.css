@@ -910,7 +910,8 @@ section {
 
 /* Experience Section */
 .experience {
-    background: var(--bg-secondary);
+    background: var(--bg-primary) !important;
+    background-color: var(--bg-primary) !important;
 }
 
 .timeline {
@@ -1004,10 +1005,59 @@ section {
 }
 
 /* Projects Section */
+.projects {
+    background: var(--bg-secondary) !important;
+    background-color: var(--bg-secondary) !important;
+}
+
 .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
+}
+
+.coming-soon-card {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coming-soon-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary);
+}
+
+.coming-soon-content {
+    max-width: 300px;
+}
+
+.coming-soon-content i {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+}
+
+.coming-soon-content h3 {
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.coming-soon-content p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
 
 .project-card {
@@ -1028,6 +1078,11 @@ section {
 .project-image {
     width: 100%;
     height: 200px;
+}
+
+.project-image img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
