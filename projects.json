@@ -1,81 +1,33 @@
 {
   "projects": [
     {
-      "title": "MNIST Digit Classifier",
-      "description": "A deep learning model that accurately classifies handwritten digits from the MNIST dataset using convolutional neural networks. Achieves 99%+ accuracy with real-time prediction capabilities.",
+      "title": "ViT Sequence Classifier",
+      "description": "Vision Transformer system for multi-digit sequence prediction using encoder-decoder architecture. Features interactive 2x2 grid drawing interface, real-time sequence inference with confidence scoring, and production-ready microservices deployment.",
       "repoUrl": "https://github.com/mrparracho/mnist-classifier",
-      "liveUrl": "https://mnist-demo.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
+      "liveUrl": "https://vit-sequence-demo.example.com",
+      "imageUrl": "static/images/projects/sequence classification.png",
       "skills": [
         {"name": "Python", "icon": "devicon-python-plain"},
         {"name": "PyTorch", "icon": "devicon-pytorch-original"},
-        {"name": "TensorFlow", "icon": "devicon-tensorflow-original"},
-        {"name": "Scikit-Learn", "icon": "fas fa-brain"}
-      ]
-    },
-    {
-      "title": "AI-Powered Data Pipeline",
-      "description": "Built a scalable ETL pipeline using Apache Spark and machine learning for real-time data processing. Reduced processing time by 60% and improved data quality.",
-      "repoUrl": "https://github.com/mrparracho/data-pipeline",
-      "liveUrl": "https://demo.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
-      "skills": [
-        {"name": "Python", "icon": "devicon-python-plain"},
-        {"name": "Apache Spark", "icon": "fas fa-fire"},
-        {"name": "TensorFlow", "icon": "devicon-tensorflow-original"},
-        {"name": "AWS", "icon": "devicon-amazonwebservices-original"}
-      ]
-    },
-    {
-      "title": "Real-Time Analytics Dashboard",
-      "description": "Developed a real-time analytics dashboard using React and WebSocket connections. Provides instant insights into business metrics with interactive visualizations.",
-      "repoUrl": "https://github.com/mrparracho/analytics-dashboard",
-      "liveUrl": "https://dashboard.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
-      "skills": [
-        {"name": "React", "icon": "devicon-react-original"},
-        {"name": "Node.js", "icon": "devicon-nodejs-plain"},
-        {"name": "WebSocket", "icon": "fas fa-broadcast-tower"},
-        {"name": "D3.js", "icon": "fas fa-chart-line"}
-      ]
-    },
-    {
-      "title": "Machine Learning Model API",
-      "description": "Created a RESTful API for serving machine learning models with automatic scaling and monitoring. Handles 10,000+ requests per minute with 99.9% uptime.",
-      "repoUrl": "https://github.com/mrparracho/ml-api",
-      "liveUrl": "https://api.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
-      "skills": [
-        {"name": "Python", "icon": "devicon-python-plain"},
+        {"name": "Vision Transformers", "icon": "fas fa-brain"},
         {"name": "FastAPI", "icon": "fas fa-rocket"},
         {"name": "Docker", "icon": "devicon-docker-plain"},
-        {"name": "Kubernetes", "icon": "devicon-kubernetes-plain"}
+        {"name": "PostgreSQL", "icon": "devicon-postgresql-plain"}
       ]
     },
     {
-      "title": "Cloud-Native Microservices",
-      "description": "Architected and implemented a microservices platform using Kubernetes and Docker. Improved deployment frequency by 300% and reduced infrastructure costs.",
-      "repoUrl": "https://github.com/mrparracho/microservices",
-      "liveUrl": "https://platform.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
+      "title": "Multi-modalilty - Image to text",
+      "description": "Image captioning system using CLIP vision encoder and GPT-2 text decoder with cross-attention. Features comprehensive evaluation metrics, dual model optimization strategies, and seamless integration with W&B and HuggingFace.",
+      "repoUrl": "https://github.com/mrparracho/ImageCaptioning",
+      "liveUrl": "https://github.com/mrparracho/ImageCaptioning",
+      "imageUrl": "static/images/projects/image_captioning.png",
       "skills": [
-        {"name": "Go", "icon": "devicon-go-plain"},
-        {"name": "Kubernetes", "icon": "devicon-kubernetes-plain"},
-        {"name": "Docker", "icon": "devicon-docker-plain"},
-        {"name": "Prometheus", "icon": "fas fa-chart-bar"}
-      ]
-    },
-    {
-      "title": "Data Visualization Platform",
-      "description": "Built an interactive data visualization platform for exploring large datasets. Features advanced filtering, real-time updates, and export capabilities.",
-      "repoUrl": "https://github.com/mrparracho/data-viz",
-      "liveUrl": "https://viz.example.com",
-      "imageUrl": "static/images/projects/placeholder.svg",
-      "skills": [
-        {"name": "Vue.js", "icon": "devicon-vuejs-plain"},
         {"name": "Python", "icon": "devicon-python-plain"},
-        {"name": "PostgreSQL", "icon": "devicon-postgresql-plain"},
-        {"name": "D3.js", "icon": "fas fa-chart-line"}
+        {"name": "PyTorch", "icon": "devicon-pytorch-original"},
+        {"name": "CLIP", "icon": "fas fa-eye"},
+        {"name": "GPT-2", "icon": "fas fa-brain"},
+        {"name": "Transformers", "icon": "fas fa-cogs"},
+        {"name": "W&B", "icon": "fas fa-chart-line"}
       ]
     }
   ]

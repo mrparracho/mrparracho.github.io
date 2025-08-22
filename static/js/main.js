@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
         loadProjects();
     }, 1000);
     
+    // Also try loading immediately
+    console.log('Loading projects immediately...');
+    loadProjects();
+    
     initContactForm();
     initParticles();
     initAISphere();
@@ -184,7 +188,10 @@ async function loadProjects() {
         
         // Fetch projects.json
         console.log('Fetching projects.json...');
-        const response = await fetch('projects.json');
+        const response = await fetch('projects.json?v=' + Date.now());
+        
+        // Clear any existing projects first
+        projectsGrid.innerHTML = '';
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -206,6 +213,13 @@ async function loadProjects() {
             projectsGrid.appendChild(projectCard);
             console.log(`Project card ${index + 1} added to DOM`);
         });
+        
+        // Handle project layout classes
+        if (data.projects.length === 1) {
+            projectsGrid.classList.add('single-project');
+        } else {
+            projectsGrid.classList.remove('single-project');
+        }
         
         console.log('=== PROJECTS LOADED SUCCESSFULLY ===');
         
@@ -231,6 +245,7 @@ async function loadProjects() {
 
 // Create Project Card
 function createProjectCard(project) {
+    console.log('Creating project card for:', project.title, 'with image:', project.imageUrl);
     const card = document.createElement('div');
     card.className = 'project-card';
     
@@ -243,7 +258,9 @@ function createProjectCard(project) {
     
     card.innerHTML = `
         <div class="project-image">
-            <img src="${project.imageUrl}" alt="${project.title}" onerror="this.src='static/images/projects/placeholder.svg'">
+            <img src="${project.imageUrl}" alt="${project.title}" 
+                 onload="console.log('Image loaded successfully:', '${project.title}')"
+                 onerror="console.error('Image failed to load:', '${project.title}', 'URL:', '${project.imageUrl}'); this.src='static/images/projects/placeholder.svg'">
         </div>
         <div class="project-content">
             <h3 class="project-title">${project.title}</h3>
@@ -255,10 +272,6 @@ function createProjectCard(project) {
                 <a href="${project.repoUrl}" class="project-link primary" target="_blank">
                     <i class="fab fa-github"></i>
                     View Code
-                </a>
-                <a href="${project.liveUrl}" class="project-link secondary" target="_blank">
-                    <i class="fas fa-external-link-alt"></i>
-                    Live Demo
                 </a>
             </div>
         </div>
