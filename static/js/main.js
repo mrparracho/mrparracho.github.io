@@ -1,15 +1,34 @@
 // Main JavaScript for Portfolio Website
+console.log('=== SCRIPT LOADED ===');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOM CONTENT LOADED ===');
+    console.log('Initializing portfolio website...');
+    
+
+    
     // Initialize all functionality
     initLoadingScreen();
     initNavigation();
     initTypingEffect();
     initScrollAnimations();
     initSkillBars();
+    
+    // Test projects loading with a simple approach
+    setTimeout(() => {
+        console.log('Testing projects loading...');
+        loadProjects();
+    }, 1000);
+    
+    // Also try loading immediately
+    console.log('Loading projects immediately...');
     loadProjects();
+    
     initContactForm();
     initParticles();
     initAISphere();
+    
+    console.log('=== ALL INITIALIZATION COMPLETE ===');
 });
 
 // Loading Screen
@@ -158,31 +177,77 @@ function initSkillBars() {
 // Load Projects
 async function loadProjects() {
     try {
-        const response = await fetch('projects.json');
-        const data = await response.json();
+        console.log('=== LOADING PROJECTS ===');
         
+        // Check if projects-grid element exists
         const projectsGrid = document.getElementById('projects-grid');
+        if (!projectsGrid) {
+            throw new Error('Projects grid element not found');
+        }
+        console.log('Projects grid found:', projectsGrid);
         
-        data.projects.forEach(project => {
+        // Fetch projects.json
+        console.log('Fetching projects.json...');
+        const response = await fetch('projects.json?v=' + Date.now());
+        
+        // Clear any existing projects first
+        projectsGrid.innerHTML = '';
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Projects data loaded:', data);
+        console.log('Number of projects:', data.projects.length);
+        
+        // Clear existing content (including the "Coming Soon" card)
+        console.log('Clearing existing content...');
+        projectsGrid.innerHTML = '';
+        
+        // Create and append project cards
+        data.projects.forEach((project, index) => {
+            console.log(`Creating project card ${index + 1}:`, project.title);
             const projectCard = createProjectCard(project);
             projectsGrid.appendChild(projectCard);
+            console.log(`Project card ${index + 1} added to DOM`);
         });
+        
+        // Handle project layout classes
+        if (data.projects.length === 1) {
+            projectsGrid.classList.add('single-project');
+        } else {
+            projectsGrid.classList.remove('single-project');
+        }
+        
+        console.log('=== PROJECTS LOADED SUCCESSFULLY ===');
+        
     } catch (error) {
-        console.error('Error loading projects:', error);
+        console.error('=== ERROR LOADING PROJECTS ===');
+        console.error('Error details:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
         // Fallback: show error message
         const projectsGrid = document.getElementById('projects-grid');
-        projectsGrid.innerHTML = `
-            <div class="error-message">
-                <p>Unable to load projects. Please check back later.</p>
-            </div>
-        `;
+        if (projectsGrid) {
+            projectsGrid.innerHTML = `
+                <div class="error-message" style="color: red; padding: 20px; text-align: center;">
+                    <h3>Error Loading Projects</h3>
+                    <p>${error.message}</p>
+                    <p>Please check the console for more details.</p>
+                </div>
+            `;
+        }
     }
 }
 
 // Create Project Card
 function createProjectCard(project) {
+    console.log('Creating project card for:', project.title, 'with image:', project.imageUrl);
     const card = document.createElement('div');
-    card.className = 'project-card scroll-animate';
+    card.className = 'project-card';
     
     const skillsHTML = project.skills.map(skill => 
         `<span class="project-skill">
@@ -193,7 +258,9 @@ function createProjectCard(project) {
     
     card.innerHTML = `
         <div class="project-image">
-            <img src="${project.imageUrl}" alt="${project.title}" onerror="this.src='static/images/projects/placeholder.svg'">
+            <img src="${project.imageUrl}" alt="${project.title}" 
+                 onload="console.log('Image loaded successfully:', '${project.title}')"
+                 onerror="console.error('Image failed to load:', '${project.title}', 'URL:', '${project.imageUrl}'); this.src='static/images/projects/placeholder.svg'">
         </div>
         <div class="project-content">
             <h3 class="project-title">${project.title}</h3>
@@ -205,10 +272,6 @@ function createProjectCard(project) {
                 <a href="${project.repoUrl}" class="project-link primary" target="_blank">
                     <i class="fab fa-github"></i>
                     View Code
-                </a>
-                <a href="${project.liveUrl}" class="project-link secondary" target="_blank">
-                    <i class="fas fa-external-link-alt"></i>
-                    Live Demo
                 </a>
             </div>
         </div>
