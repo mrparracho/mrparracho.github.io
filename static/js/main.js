@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initContactForm();
     initParticles();
     initAISphere();
+    initAIAssistant(); // Add this line
     
     console.log('=== ALL INITIALIZATION COMPLETE ===');
 });
@@ -775,3 +776,233 @@ function initAISphere() {
         console.log('AI Sphere clicked - ready for GPT integration');
     });
 }
+
+// AI Assistant functionality
+function initAIAssistant() {
+    const chatWidget = document.getElementById('ai-chat-widget');
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-message');
+    const voiceButton = document.getElementById('voice-input');
+    const startChatButton = document.getElementById('start-ai-chat');
+    
+    let isChatOpen = false;
+    let isRecording = false;
+    let recognition = null;
+    
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            chatInput.value = transcript;
+            sendMessage();
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            stopRecording();
+        };
+        
+        recognition.onend = function() {
+            stopRecording();
+        };
+    }
+    
+    // Toggle chat widget
+    chatToggle.addEventListener('click', () => {
+        isChatOpen = !isChatOpen;
+        chatBody.style.display = isChatOpen ? 'flex' : 'none';
+        chatToggle.innerHTML = isChatOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-comments"></i>';
+    });
+    
+    // Start AI chat from main section
+    if (startChatButton) {
+        startChatButton.addEventListener('click', () => {
+            isChatOpen = true;
+            chatBody.style.display = 'flex';
+            chatToggle.innerHTML = '<i class="fas fa-times"></i>';
+            chatInput.focus();
+        });
+    }
+    
+    // Send message
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, 'user');
+        chatInput.value = '';
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Simulate AI response (replace with actual API call)
+        setTimeout(() => {
+            hideTypingIndicator();
+            const aiResponse = generateAIResponse(message);
+            addMessage(aiResponse, 'ai');
+        }, 1000 + Math.random() * 2000);
+    }
+    
+    // Send button click
+    sendButton.addEventListener('click', sendMessage);
+    
+    // Enter key press
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Voice input
+    voiceButton.addEventListener('click', () => {
+        if (!recognition) {
+            alert('Speech recognition not supported in this browser');
+            return;
+        }
+        
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+    
+    function startRecording() {
+        isRecording = true;
+        voiceButton.classList.add('recording');
+        voiceButton.innerHTML = '<i class="fas fa-stop"></i>';
+        recognition.start();
+    }
+    
+    function stopRecording() {
+        isRecording = false;
+        voiceButton.classList.remove('recording');
+        voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+        if (recognition) {
+            recognition.stop();
+        }
+    }
+    
+    function addMessage(text, sender) {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <p>${text}</p>
+            </div>
+            <div class="message-time">${time}</div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function showTypingIndicator() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai-message typing-indicator';
+        typingDiv.id = 'typing-indicator';
+        
+        typingDiv.innerHTML = `
+            <div class="message-content">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(typingDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+    
+    // Simulate AI response generation (replace with actual API call)
+    function generateAIResponse(userMessage) {
+        const responses = {
+            'experience': "I have over 7 years of experience in software development, specializing in Data Engineering and AI. I've worked at companies like Global Media, Marionete, and Capgemini, leading teams and building scalable data solutions.",
+            'skills': "My core skills include Python, SQL, Apache Spark, Databricks, AWS, machine learning frameworks like PyTorch and TensorFlow, and modern data stack tools like Airflow and dbt.",
+            'projects': "I've built various projects including ML pipelines, real-time analytics dashboards, and cloud-native microservices. You can see my featured projects in the portfolio above.",
+            'background': "I'm a Tech Lead with a passion for Data Engineering and AI. I love solving complex problems and leading technical teams to build innovative solutions.",
+            'leadership': "I've led teams of up to 15+ engineers, focusing on mentoring, technical architecture, and driving business value through technology solutions.",
+            'ai': "I specialize in building AI-powered systems, from machine learning pipelines to LLM integrations. I'm particularly interested in practical AI applications that solve real business problems."
+        };
+        
+        const lowerMessage = userMessage.toLowerCase();
+        
+        for (const [key, response] of Object.entries(responses)) {
+            if (lowerMessage.includes(key)) {
+                return response;
+            }
+        }
+        
+        return "That's a great question! I'm Miguel's AI assistant, trained on his professional background. I can tell you about his experience in data engineering, AI, leadership roles, technical skills, or specific projects. What would you like to know more about?";
+    }
+    
+    // Initialize chat widget as collapsed
+    chatBody.style.display = 'none';
+}
+
+// CSS for typing indicator
+const typingCSS = `
+.typing-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: 0s; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.3;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+`;
+
+// Add typing CSS to head
+const style = document.createElement('style');
+style.textContent = typingCSS;
+document.head.appendChild(style);
+
+// Add initAIAssistant to your main initialization function
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    initAIAssistant(); // Add this line
+});
