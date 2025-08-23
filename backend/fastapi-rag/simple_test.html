@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple CORS Test</title>
+</head>
+<body>
+    <h1>CORS Test</h1>
+    <button onclick="testHealth()">Test Health Endpoint</button>
+    <button onclick="testAsk()">Test Ask Endpoint</button>
+    <div id="output"></div>
+
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += '<p>' + message + '</p>';
+        }
+
+        async function testHealth() {
+            try {
+                log('Testing health endpoint...');
+                const response = await fetch('http://localhost:8001/health');
+                const data = await response.json();
+                log('✅ Health endpoint works: ' + JSON.stringify(data));
+            } catch (error) {
+                log('❌ Health endpoint failed: ' + error.message);
+            }
+        }
+
+        async function testAsk() {
+            try {
+                log('Testing ask endpoint...');
+                const response = await fetch('http://localhost:8001/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: 'test' })
+                });
+                log('✅ Ask endpoint response status: ' + response.status);
+                
+                // Try to read the stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    log('📡 Chunk received: ' + chunk.substring(0, 100));
+                }
+            } catch (error) {
+                log('❌ Ask endpoint failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

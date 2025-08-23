@@ -777,189 +777,174 @@ function initAISphere() {
     });
 }
 
-// AI Assistant functionality
+// AI Assistant functionality with RAG integration
 function initAIAssistant() {
-    const chatWidget = document.getElementById('ai-chat-widget');
-    const chatToggle = document.getElementById('chat-toggle');
-    const chatBody = document.getElementById('chat-body');
-    const chatInput = document.getElementById('chat-input');
-    const sendButton = document.getElementById('send-message');
-    const voiceButton = document.getElementById('voice-input');
     const startChatButton = document.getElementById('start-ai-chat');
+    const modal = document.getElementById('rag-chat-modal');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalClose = document.getElementById('modal-close');
+    const modalChatInput = document.getElementById('modal-chat-input');
+    const modalSendButton = document.getElementById('modal-send-message');
+    const modalChatMessages = document.getElementById('modal-chat-messages');
     
-    let isChatOpen = false;
-    let isRecording = false;
-    let recognition = null;
+
     
-    // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-        
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            chatInput.value = transcript;
-            sendMessage();
-        };
-        
-        recognition.onerror = function(event) {
-            console.error('Speech recognition error:', event.error);
-            stopRecording();
-        };
-        
-        recognition.onend = function() {
-            stopRecording();
-        };
-    }
-    
-    // Toggle chat widget
-    chatToggle.addEventListener('click', () => {
-        isChatOpen = !isChatOpen;
-        chatBody.style.display = isChatOpen ? 'flex' : 'none';
-        chatToggle.innerHTML = isChatOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-comments"></i>';
-    });
+    let isStreaming = false;
     
     // Start AI chat from main section
     if (startChatButton) {
         startChatButton.addEventListener('click', () => {
-            isChatOpen = true;
-            chatBody.style.display = 'flex';
-            chatToggle.innerHTML = '<i class="fas fa-times"></i>';
-            chatInput.focus();
+            modal.classList.add('active');
+            modalChatInput.focus();
         });
     }
     
-    // Send message
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
-        
-        // Add user message to chat
-        addMessage(message, 'user');
-        chatInput.value = '';
-        
-        // Show typing indicator
-        showTypingIndicator();
-        
-        // Simulate AI response (replace with actual API call)
-        setTimeout(() => {
-            hideTypingIndicator();
-            const aiResponse = generateAIResponse(message);
-            addMessage(aiResponse, 'ai');
-        }, 1000 + Math.random() * 2000);
-    }
+    // Close modal when overlay or close button is clicked
+    modalOverlay.addEventListener('click', closeModal);
+    modalClose.addEventListener('click', closeModal);
     
-    // Send button click
-    sendButton.addEventListener('click', sendMessage);
-    
-    // Enter key press
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
         }
     });
     
-    // Voice input
-    voiceButton.addEventListener('click', () => {
-        if (!recognition) {
-            alert('Speech recognition not supported in this browser');
-            return;
-        }
-        
-        if (isRecording) {
-            stopRecording();
-        } else {
-            startRecording();
+    function closeModal() {
+        modal.classList.remove('active');
+        modalChatInput.value = '';
+    }
+    
+
+    
+
+    
+    // Modal send message functionality
+    modalChatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendModalMessage();
         }
     });
     
-    function startRecording() {
-        isRecording = true;
-        voiceButton.classList.add('recording');
-        voiceButton.innerHTML = '<i class="fas fa-stop"></i>';
-        recognition.start();
-    }
+    modalSendButton.addEventListener('click', sendModalMessage);
     
-    function stopRecording() {
-        isRecording = false;
-        voiceButton.classList.remove('recording');
-        voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
-        if (recognition) {
-            recognition.stop();
+    async function sendModalMessage() {
+        const message = modalChatInput.value.trim();
+        if (!message || isStreaming) return;
+        
+        // Add user message to modal
+        addModalMessage(message, 'user');
+        modalChatInput.value = '';
+        
+        // Disable input during streaming
+        isStreaming = true;
+        modalChatInput.disabled = true;
+        modalSendButton.disabled = true;
+        
+        // Add typing indicator
+        addModalTypingIndicator();
+        
+        try {
+            // Connect to your RAG API
+            const response = await fetch('http://localhost:8001/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: message })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            
+                            if (data.token) {
+                                if (fullResponse === '') {
+                                    removeModalTypingIndicator();
+                                    addModalMessage('', 'assistant');
+                                }
+                                fullResponse += data.token;
+                                const lastMessage = modalChatMessages.querySelector('.message.assistant:last-child .message-content');
+                                if (lastMessage) {
+                                    lastMessage.textContent = fullResponse;
+                                }
+                            } else if (data.text) {
+                                // Final response
+                                const lastMessage = modalChatMessages.querySelector('.message.assistant:last-child .message-content');
+                                if (lastMessage) {
+                                    lastMessage.textContent = data.text;
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore parsing errors for incomplete chunks
+                        }
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            removeModalTypingIndicator();
+            addModalMessage(`Error: ${error.message}`, 'assistant');
+        } finally {
+            // Re-enable input
+            isStreaming = false;
+            modalChatInput.disabled = false;
+            modalSendButton.disabled = false;
+            modalChatInput.focus();
         }
     }
     
-    function addMessage(text, sender) {
-        const messagesContainer = document.getElementById('chat-messages');
+    function addModalMessage(content, type) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}-message`;
+        messageDiv.className = `message ${type}`;
         
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = content;
         
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <p>${text}</p>
-            </div>
-            <div class="message-time">${time}</div>
-        `;
-        
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messageDiv.appendChild(contentDiv);
+        modalChatMessages.appendChild(messageDiv);
+        modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
     }
     
-    function showTypingIndicator() {
-        const messagesContainer = document.getElementById('chat-messages');
+    function addModalTypingIndicator() {
         const typingDiv = document.createElement('div');
-        typingDiv.className = 'message ai-message typing-indicator';
-        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'message assistant';
+        typingDiv.id = 'modal-typing-indicator';
         
-        typingDiv.innerHTML = `
-            <div class="message-content">
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        `;
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = 'Miguel is thinking...';
         
-        messagesContainer.appendChild(typingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        typingDiv.appendChild(contentDiv);
+        modalChatMessages.appendChild(typingDiv);
+        modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
     }
     
-    function hideTypingIndicator() {
-        const typingIndicator = document.getElementById('typing-indicator');
+    function removeModalTypingIndicator() {
+        const typingIndicator = document.getElementById('modal-typing-indicator');
         if (typingIndicator) {
             typingIndicator.remove();
         }
     }
-    
-    // Simulate AI response generation (replace with actual API call)
-    function generateAIResponse(userMessage) {
-        const responses = {
-            'experience': "I have over 7 years of experience in software development, specializing in Data Engineering and AI. I've worked at companies like Global Media, Marionete, and Capgemini, leading teams and building scalable data solutions.",
-            'skills': "My core skills include Python, SQL, Apache Spark, Databricks, AWS, machine learning frameworks like PyTorch and TensorFlow, and modern data stack tools like Airflow and dbt.",
-            'projects': "I've built various projects including ML pipelines, real-time analytics dashboards, and cloud-native microservices. You can see my featured projects in the portfolio above.",
-            'background': "I'm a Tech Lead with a passion for Data Engineering and AI. I love solving complex problems and leading technical teams to build innovative solutions.",
-            'leadership': "I've led teams of up to 15+ engineers, focusing on mentoring, technical architecture, and driving business value through technology solutions.",
-            'ai': "I specialize in building AI-powered systems, from machine learning pipelines to LLM integrations. I'm particularly interested in practical AI applications that solve real business problems."
-        };
-        
-        const lowerMessage = userMessage.toLowerCase();
-        
-        for (const [key, response] of Object.entries(responses)) {
-            if (lowerMessage.includes(key)) {
-                return response;
-            }
-        }
-        
-        return "That's a great question! I'm Miguel's AI assistant, trained on his professional background. I can tell you about his experience in data engineering, AI, leadership roles, technical skills, or specific projects. What would you like to know more about?";
-    }
-    
-    // Initialize chat widget as collapsed
-    chatBody.style.display = 'none';
 }
 
 // CSS for typing indicator

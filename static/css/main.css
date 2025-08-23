@@ -1707,130 +1707,168 @@ section {
     font-style: italic;
 }
 
-/* AI Chat Widget */
-.ai-chat-widget {
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .ai-assistant-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+
+    
+    .ai-features {
+        flex-direction: column;
+    }
+}
+
+/* RAG Chat Modal Styles */
+.rag-chat-modal {
+    display: none;
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 350px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.rag-chat-modal.active {
+    display: block;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
     background: var(--bg-secondary);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-hover);
-    border: 1px solid var(--border);
-    z-index: 1000;
     overflow: hidden;
-    transition: var(--transition);
+    animation: modalSlideIn 0.3s ease-out;
 }
 
-.chat-header {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    background: var(--bg-tertiary);
-    border-bottom: 1px solid var(--border);
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }
 
-.chat-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
+.modal-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
+    padding: 24px;
+    text-align: center;
+    position: relative;
 }
 
-.chat-info h4 {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--text-primary);
+.modal-header h3 {
+    margin-bottom: 8px;
+    font-size: 1.5rem;
 }
 
-.status {
-    font-size: 0.8rem;
-    color: var(--success);
+.modal-header p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
 }
 
-.chat-toggle {
-    margin-left: auto;
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
     background: none;
     border: none;
-    color: var(--text-secondary);
+    color: white;
     font-size: 1.2rem;
     cursor: pointer;
     padding: 8px;
-    border-radius: var(--border-radius-sm);
+    border-radius: 50%;
     transition: var(--transition);
 }
 
-.chat-toggle:hover {
-    background: var(--bg-primary);
-    color: var(--primary);
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.chat-body {
-    height: 400px;
+.modal-body {
+    padding: 0;
+    height: 500px;
     display: flex;
     flex-direction: column;
 }
 
-.chat-messages {
+.modal-body .chat-messages {
     flex: 1;
-    padding: 20px;
     overflow-y: auto;
-    max-height: 300px;
+    padding: 20px;
+    background: var(--bg-primary);
 }
 
-.message {
-    margin-bottom: 16px;
+.modal-body .message {
+    margin-bottom: 15px;
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
 }
 
-.message-content {
+.modal-body .message.assistant {
+    justify-content: flex-start;
+}
+
+.modal-body .message.user {
+    justify-content: flex-end;
+}
+
+.modal-body .message-content {
+    max-width: 70%;
     padding: 12px 16px;
-    border-radius: var(--border-radius-sm);
-    max-width: 80%;
+    border-radius: 18px;
+    word-wrap: break-word;
 }
 
-.ai-message .message-content {
+.modal-body .message.assistant .message-content {
     background: var(--bg-tertiary);
+    color: var(--text-primary);
     border: 1px solid var(--border);
-    align-self: flex-start;
 }
 
-.user-message .message-content {
+.modal-body .message.user .message-content {
     background: var(--primary);
     color: white;
-    align-self: flex-end;
-    margin-left: auto;
 }
 
-.message-time {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    margin-top: 4px;
-    align-self: flex-start;
-}
-
-.user-message .message-time {
-    align-self: flex-end;
-}
-
-.chat-input-container {
+.modal-body .chat-input {
     padding: 20px;
+    background: var(--bg-secondary);
     border-top: 1px solid var(--border);
 }
 
-.input-group {
+.modal-body .input-group {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-#chat-input {
+.modal-body #modal-chat-input {
     flex: 1;
     padding: 12px 16px;
     border: 1px solid var(--border);
@@ -1840,63 +1878,40 @@ section {
     font-size: 0.9rem;
 }
 
-#chat-input:focus {
+.modal-body #modal-chat-input:focus {
     outline: none;
     border-color: var(--primary);
 }
 
-.send-btn, .voice-btn {
-    padding: 12px;
+.modal-body .send-btn {
+    padding: 12px 16px;
+    background: var(--primary);
+    color: white;
     border: none;
     border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.send-btn {
-    background: var(--primary);
-    color: white;
-}
-
-.send-btn:hover {
+.modal-body .send-btn:hover {
     background: var(--primary-dark);
 }
 
-.voice-btn {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
+.modal-body .send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.voice-btn:hover {
-    background: var(--bg-primary);
-    color: var(--primary);
-}
+/* Context sources styling removed for cleaner interface */
 
-.voice-btn.recording {
-    background: var(--error);
-    color: white;
-    animation: pulse 1s infinite;
-}
-
-/* Responsive Design */
+/* Responsive modal */
 @media (max-width: 768px) {
-    .ai-assistant-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
+    .modal-content {
+        width: 95%;
+        max-height: 95vh;
     }
     
-    .ai-chat-widget {
-        width: calc(100vw - 40px);
-        right: 20px;
-        left: 20px;
-        bottom: 20px;
-    }
-    
-    .ai-features {
-        flex-direction: column;
+    .modal-body {
+        height: 400px;
     }
 } 

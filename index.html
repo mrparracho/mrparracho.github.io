@@ -566,38 +566,34 @@
         </div>
     </footer>
 
-    <!-- AI Chat Widget -->
-    <div id="ai-chat-widget" class="ai-chat-widget">
-        <div class="chat-header">
-            <div class="chat-avatar">
-                <i class="fas fa-robot"></i>
+
+
+    <!-- RAG Chat Modal -->
+    <div id="rag-chat-modal" class="rag-chat-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Miguel's AI Assistant</h3>
+                <p>Ask me anything about my background, skills, and experience</p>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="chat-info">
-                <h4>Miguel's AI Assistant</h4>
-                <span class="status">Online</span>
-            </div>
-            <button class="chat-toggle" id="chat-toggle">
-                <i class="fas fa-comments"></i>
-            </button>
-        </div>
-        <div class="chat-body" id="chat-body">
-            <div class="chat-messages" id="chat-messages">
-                <div class="message ai-message">
-                    <div class="message-content">
-                        <p>Hello! I'm Miguel's AI assistant. I can answer questions about his background, skills, experience, and projects. What would you like to know?</p>
+            <div class="modal-body">
+                <div class="chat-messages" id="modal-chat-messages">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            <p>Hello! I'm Miguel's AI assistant. I can answer questions about his background, skills, experience, and projects. What would you like to know?</p>
+                        </div>
                     </div>
-                    <div class="message-time">Just now</div>
                 </div>
-            </div>
-            <div class="chat-input-container">
-                <div class="input-group">
-                    <input type="text" id="chat-input" placeholder="Type your question..." />
-                    <button id="send-message" class="send-btn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                    <button id="voice-input" class="voice-btn">
-                        <i class="fas fa-microphone"></i>
-                    </button>
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="modal-chat-input" placeholder="Type your question..." />
+                        <button id="modal-send-message" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -607,5 +603,6 @@
     <script src="static/js/particles.min.js"></script>
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <script src="static/js/main.js"></script>
+    <script src="static/js/rag-chat.js"></script>
 </body>
 </html>
