@@ -5,7 +5,7 @@
       "description": "An innovative AI-powered assistant that answers recruiter questions about my background, skills, and experience using my cloned voice. Built with GPT-5, ElevenLabs voice cloning, and modern web technologies.",
       "repoUrl": "https://github.com/mrparracho/ai-assistant",
       "liveUrl": "#ai-assistant",
-      "imageUrl": "static/images/projects/ai-assistant.svg",
+      "imageUrl": "static/images/projects/placeholder.svg",
       "skills": [
         {"name": "GPT-5", "icon": "fas fa-brain"},
         {"name": "Voice Cloning", "icon": "fas fa-microphone"},

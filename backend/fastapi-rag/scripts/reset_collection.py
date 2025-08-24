@@ -6,6 +6,7 @@ Script to reset the ChromaDB collection and re-ingest documents.
 import asyncio
 import sys
 from pathlib import Path
+import os
 
 # Add the parent directory to Python path to find app modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -13,7 +14,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from app.chroma_db import chroma_manager
 from app.rag import chunk_markdown
 from openai import AsyncOpenAI
-import os
 from dotenv import load_dotenv
 
 load_dotenv()

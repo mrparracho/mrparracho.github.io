@@ -727,13 +727,15 @@ function initAISphere() {
     // Start animation
     animate();
     
-    // Add interaction
+    // Add interaction with click support
     let isMouseDown = false;
     let mouseX = 0;
     let mouseY = 0;
+    let hasMoved = false;
     
     container.addEventListener('mousedown', (e) => {
         isMouseDown = true;
+        hasMoved = false;
         mouseX = e.clientX;
         mouseY = e.clientY;
     });
@@ -743,38 +745,38 @@ function initAISphere() {
             const deltaX = e.clientX - mouseX;
             const deltaY = e.clientY - mouseY;
             
-            sphere.rotation.y += deltaX * 0.01;
-            sphere.rotation.x += deltaY * 0.01;
-            
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+            // Only rotate if mouse has moved significantly
+            if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+                hasMoved = true;
+                sphere.rotation.y += deltaX * 0.01;
+                sphere.rotation.x += deltaY * 0.01;
+                
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }
         }
     });
     
-    container.addEventListener('mouseup', () => {
+    container.addEventListener('mouseup', (e) => {
+        // If mouse didn't move much, it's a click
+        if (isMouseDown && !hasMoved) {
+            console.log('🎯 Three.js sphere click detected');
+            // Let the click event bubble up to our handlers
+        }
         isMouseDown = false;
+        hasMoved = false;
     });
     
     container.addEventListener('mouseleave', () => {
         isMouseDown = false;
+        hasMoved = false;
     });
     
-    // Add click event for future GPT integration
-    container.addEventListener('click', function() {
-        // Change label temporarily
-        const originalLabel = sphereLabel.textContent;
-        sphereLabel.textContent = 'Connecting...';
-        sphereLabel.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-        
-        // Reset after animation
-        setTimeout(() => {
-            sphereLabel.textContent = originalLabel;
-            sphereLabel.style.color = '';
-        }, 2000);
-        
-        // TODO: Integrate with GPT API here
-        console.log('AI Sphere clicked - ready for GPT integration');
-    });
+    // Click event handled by ElevenLabs integration
+    // container.addEventListener('click', function() {
+    //     // This is now handled by the ElevenLabs integration
+    //     console.log('AI Sphere click handled by ElevenLabs integration');
+    // });
 }
 
 // AI Assistant functionality with RAG integration

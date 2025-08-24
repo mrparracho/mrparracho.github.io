@@ -62,3 +62,6 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+
+# ChromaDB
+chroma_db/
