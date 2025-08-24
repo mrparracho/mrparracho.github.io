@@ -46,6 +46,7 @@
             <ul class="nav-menu">
                 <li><a href="#home" class="nav-link">Home</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#ai-assistant" class="nav-link">AI Assistant</a></li>
                 <li><a href="#experience" class="nav-link">Experience</a></li>
                 <li><a href="#projects" class="nav-link">Projects</a></li>
                 <li><a href="#skills" class="nav-link">Skills</a></li>
@@ -90,6 +91,54 @@
         </div>
         <div class="scroll-indicator">
             <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- AI Assistant Section -->
+    <section id="ai-assistant" class="ai-assistant">
+        <div class="container">
+            <div class="ai-assistant-content">
+                <div class="ai-assistant-info">
+                    <h2 class="section-title">Meet My AI Assistant</h2>
+                    <p class="ai-description">
+                        Experience the future of personal branding. This AI assistant, powered by GPT-5 and voice cloning technology, 
+                        can answer questions about my background, skills, and experience in my own voice.
+                    </p>
+                    <div class="ai-features">
+                        <div class="feature">
+                            <i class="fas fa-brain"></i>
+                            <span>GPT-5 Powered</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-microphone"></i>
+                            <span>Voice Cloning</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-comments"></i>
+                            <span>Real-time Chat</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="start-ai-chat">
+                        <i class="fas fa-play"></i>
+                        Start Conversation
+                    </button>
+                </div>
+                <div class="ai-assistant-demo">
+                    <div class="demo-container">
+                        <div class="ai-avatar">
+                            <div class="avatar-circle">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="pulse-ring"></div>
+                        </div>
+                        <div class="demo-text">
+                            <p>"Hi! I'm Miguel's AI assistant. Ask me anything about his experience, skills, or projects!"</p>
+                        </div>
+                    </div>
+                </div>
+                
+
+            </div>
         </div>
     </section>
 
@@ -513,9 +562,46 @@
         </div>
     </footer>
 
+
+
+    <!-- RAG Chat Modal -->
+    <div id="rag-chat-modal" class="rag-chat-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Miguel's AI Assistant</h3>
+                <p>Ask me anything about my background, skills, and experience</p>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-messages" id="modal-chat-messages">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            <p>Hello! I'm Miguel's AI assistant. I can answer questions about his background, skills, experience, and projects. What would you like to know?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="modal-chat-input" placeholder="Type your question..." />
+                        <button id="modal-send-message" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="static/js/particles.min.js"></script>
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <script src="static/js/main.js"></script>
+    <script src="static/js/rag-chat.js"></script>
+    <script src="static/js/elevenlabs-integration.js"></script>
+    
+    
 </body>
 </html>
