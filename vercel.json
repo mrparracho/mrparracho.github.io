@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/fastapi-rag/app/main.py",
-      "use": "@vercel/python"
+  "functions": {
+    "backend/fastapi-rag/app/main.py": {
+      "runtime": "@vercel/python",
+      "maxDuration": 30
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
@@ -15,10 +15,5 @@
   "env": {
     "PYTHONPATH": "backend/fastapi-rag",
     "VERCEL": "1"
-  },
-  "functions": {
-    "backend/fastapi-rag/app/main.py": {
-      "maxDuration": 30
-    }
   }
 }
