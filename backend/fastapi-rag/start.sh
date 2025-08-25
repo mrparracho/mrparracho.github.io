@@ -6,6 +6,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Add uv to PATH
 export PATH="$HOME/.local/bin:$PATH"
 
+# cd to the backend/fastapi-rag directory
+cd backend/fastapi-rag
+
 # install dependencies
 uv sync
 
