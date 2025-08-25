@@ -9,6 +9,13 @@ from fastapi.responses import HTMLResponse
 # Load environment variables first
 load_dotenv()
 
+# Check if running in Vercel
+IS_VERCEL = os.getenv("VERCEL") or os.getenv("VERCEL_ENV")
+if IS_VERCEL:
+    print("🚀 Running in Vercel serverless environment")
+else:
+    print("🏠 Running in local environment")
+
 app = FastAPI(title="Miguel's RAG Assistant", version="1.0.0")
 
 # Check if OpenAI API key is available
@@ -37,6 +44,17 @@ app.add_middleware(
 )
 
 
+@app.get("/test")
+async def test_endpoint():
+    """Simple test endpoint to verify deployment."""
+    return {
+        "message": "API is working!",
+        "environment": "Vercel" if IS_VERCEL else "Local",
+        "openai_configured": oclient is not None,
+        "timestamp": "2024-01-27T14:40:00Z"
+    }
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -55,11 +73,38 @@ async def health_check():
 async def root():
     """Serve the portfolio chat interface HTML."""
     try:
-        with open("portfolio_chat.html", "r", encoding="utf-8") as f:
-            html_content = f.read()
-        return HTMLResponse(content=html_content)
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Portfolio chat interface not found</h1>", status_code=404)
+        # Try multiple possible paths for the HTML file in different environments
+        possible_paths = [
+            "portfolio_chat.html",
+            "backend/fastapi-rag/portfolio_chat.html",
+            "../portfolio_chat.html",
+            "/var/task/backend/fastapi-rag/portfolio_chat.html",  # Vercel serverless path
+            "/tmp/portfolio_chat.html"  # Fallback
+        ]
+        
+        for path in possible_paths:
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+                print(f"✅ Successfully loaded HTML from: {path}")
+                return HTMLResponse(content=html_content)
+            except FileNotFoundError:
+                print(f"❌ File not found at: {path}")
+                continue
+            except Exception as e:
+                print(f"⚠️ Error reading {path}: {str(e)}")
+                continue
+        
+        # If file not found, return a simple message
+        return HTMLResponse(
+            content="<h1>Chat interface not available</h1><p>HTML file not found in serverless environment</p>", 
+            status_code=404
+        )
+    except Exception as e:
+        return HTMLResponse(
+            content=f"<h1>Error loading interface</h1><p>{str(e)}</p>", 
+            status_code=500
+        )
 
 
 @app.get("/api")
@@ -68,12 +113,15 @@ async def api_info():
     return {
         "message": "Miguel's RAG Assistant API",
         "version": "1.0.0",
-        "vector_db": "ChromaDB (Local)",
+        "environment": "Vercel Serverless" if IS_VERCEL else "Local",
+        "vector_db": "ChromaDB (In-Memory)" if IS_VERCEL else "ChromaDB (Local)",
         "openai_configured": oclient is not None,
         "endpoints": {
             "GET /": "Test chat interface",
+            "GET /test": "Simple test endpoint",
             "POST /ask": "Streaming RAG question answering",
             "GET /health": "Health check",
+            "GET /api": "API information",
             "GET /docs": "API documentation"
         }
     }

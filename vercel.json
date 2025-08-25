@@ -1,18 +1,24 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "backend/fastapi-rag/app/main.py",
-        "use": "@vercel/python"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/backend/fastapi-rag/app/main.py"
-      }
-    ],
-    "env": {
-      "PYTHONPATH": "backend/fastapi-rag"
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/fastapi-rag/app/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/backend/fastapi-rag/app/main.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "backend/fastapi-rag",
+    "VERCEL": "1"
+  },
+  "functions": {
+    "backend/fastapi-rag/app/main.py": {
+      "maxDuration": 30
     }
   }
+}
