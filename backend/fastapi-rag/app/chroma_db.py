@@ -8,27 +8,13 @@ load_dotenv()
 
 class ChromaDBManager:
     def __init__(self):
-        # Check if running in Vercel serverless environment
-        if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
-            # Serverless environment - use in-memory client
-            print("🚀 Running in serverless environment - using in-memory ChromaDB")
-            self.client = chromadb.Client(
-                settings=Settings(
-                    anonymized_telemetry=False,
-                    allow_reset=True,
-                    is_persistent=False
-                )
+        self.client = chromadb.PersistentClient(
+            path="./chroma_db",  # Local storage directory
+            settings=Settings(
+                anonymized_telemetry=False,  # Disable telemetry
+                allow_reset=True
             )
-        else:
-            # Local environment - use persistent storage
-            print("🏠 Running locally - using persistent ChromaDB")
-            self.client = chromadb.PersistentClient(
-                path="./chroma_db",  # Local storage directory
-                settings=Settings(
-                    anonymized_telemetry=False,  # Disable telemetry
-                    allow_reset=True
-                )
-            )
+        )
         
         # Get or create collection with explicit dimensions
         try:
