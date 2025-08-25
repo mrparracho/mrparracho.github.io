@@ -1,5 +1,113 @@
-// ElevenLabs Conversational AI Integration - Audio File Mode
-console.log('🚀 ELEVENLABS CONVERSATIONAL AI LOADING...');
+// ElevenLabs Conversational AI Integration
+
+// Streaming TTS class for real-time voice streaming
+class StreamingTTS {
+    constructor(apiKey, voiceId, modelId) {
+        this.apiKey = apiKey;
+        this.voiceId = voiceId;
+        this.modelId = modelId;
+        this.ws = null;
+        this.audioContext = null;
+    }
+    
+    async start() {
+        try {
+            console.log('🎤 Starting streaming TTS...');
+            
+            // Initialize audio context
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Connect to ElevenLabs WebSocket
+            const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.modelId}&output_format=pcm_22050&xi-api-key=${this.apiKey}`;
+            this.ws = new WebSocket(wsUrl);
+            
+            this.ws.onopen = () => {
+                console.log('✅ WebSocket connected for streaming TTS');
+                
+                // Send initialization message
+                this.ws.send(JSON.stringify({
+                    text: " ",
+                    voice_settings: {
+                        stability: 0.7,
+                        similarity_boost: 0.7,
+                        use_speaker_boost: true
+                    },
+                    generation_config: {
+                        chunk_length_schedule: [50, 90, 120, 150, 200]
+                    }
+                }));
+            };
+            
+            this.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.audio) {
+                    // Decode base64 audio and play immediately
+                    const audioData = atob(data.audio);
+                    const audioArray = new Uint8Array(audioData.length);
+                    for (let i = 0; i < audioData.length; i++) {
+                        audioArray[i] = audioData.charCodeAt(i);
+                    }
+                    
+                    this.playAudioChunk(audioArray);
+                }
+                
+                if (data.isFinal) {
+                    console.log('✅ Streaming TTS completed');
+                }
+            };
+            
+            this.ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+                // Fallback to regular TTS if WebSocket fails
+                console.log('🔄 Falling back to regular TTS...');
+            };
+            
+            this.ws.onclose = () => {
+                console.log('🔌 WebSocket closed');
+            };
+            
+        } catch (error) {
+            console.error('❌ Error starting streaming TTS:', error);
+        }
+    }
+    
+    async sendText(text) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify({ text: text }));
+        }
+    }
+    
+    async playAudioChunk(audioArray) {
+        try {
+            // Convert PCM data to audio buffer
+            const audioBuffer = this.audioContext.createBuffer(1, audioArray.length / 2, 22050);
+            const channelData = audioBuffer.getChannelData(0);
+            
+            // Convert 16-bit PCM to float32
+            for (let i = 0; i < audioArray.length; i += 2) {
+                const sample = (audioArray[i] | (audioArray[i + 1] << 8)) / 32768.0;
+                channelData[i / 2] = sample;
+            }
+            
+            // Create audio source and play
+            const source = this.audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(this.audioContext.destination);
+            source.start();
+            
+        } catch (error) {
+            console.error('❌ Error playing audio chunk:', error);
+        }
+    }
+    
+    async close() {
+        if (this.ws) {
+            this.ws.send(JSON.stringify({ text: "", flush: true }));
+            this.ws.close();
+        }
+    }
+}
 
 class ElevenLabsConversationalAI {
     constructor() {
@@ -11,7 +119,6 @@ class ElevenLabsConversationalAI {
         this.audioContext = null;
         this.audioQueue = [];
         this.isPlaying = false;
-        this.currentAudio = null;
         
         // ElevenLabs Configuration
         this.elevenLabsApiKey = 'sk_e7a2441a1a89bdf683388edc0083242104e50e6aaf4ec79c';
@@ -19,7 +126,7 @@ class ElevenLabsConversationalAI {
         this.elevenLabsModel = 'eleven_multilingual_v2';
         
         // RAG Backend Configuration
-        this.ragBackendUrl = 'http://localhost:8001';
+        this.ragBackendUrl = 'https://mrparracho-github-io.onrender.com';
         
         this.init();
     }
@@ -405,7 +512,12 @@ class ElevenLabsConversationalAI {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let fullResponse = '';
+            let tokenCount = 0;
             let isComplete = false;
+            let ttsStarted = false;
+            
+            // Initialize streaming TTS
+            let streamingTTS = null;
             
             while (!isComplete) {
                 const { done, value } = await reader.read();
@@ -422,19 +534,65 @@ class ElevenLabsConversationalAI {
                             if (data.token) {
                                 // Stream token received
                                 fullResponse += data.token;
-                                console.log('📝 Token received:', data.token);
+                                tokenCount++;
+                                console.log('📝 Token received:', data.token, 'Count:', tokenCount);
                                 
-                                            // Keep label showing "RAG Thinking..." during streaming
-            const label = document.querySelector('.sphere-label');
-            if (label) {
-                label.textContent = 'RAG Thinking...';
-                label.style.color = '#0ea5e9'; // Sky blue
-            }
+                                // Start streaming TTS as soon as we have 5 tokens
+                                if (tokenCount >= 5 && !ttsStarted) {
+                                    console.log('🎤 Starting streaming TTS with first 5 tokens...');
+                                    ttsStarted = true;
+                                    
+                                    try {
+                                        // Initialize streaming TTS
+                                        streamingTTS = new StreamingTTS(this.elevenLabsApiKey, this.elevenLabsVoiceId, this.elevenLabsModel);
+                                        await streamingTTS.start();
+                                        
+                                        // Send initial text
+                                        await streamingTTS.sendText(fullResponse);
+                                        
+                                        // Update label to show TTS is starting
+                                        const label = document.querySelector('.sphere-label');
+                                        if (label) {
+                                            label.textContent = 'Speaking...';
+                                            label.style.color = '#0ea5e9'; // Sky blue
+                                        }
+                                    } catch (error) {
+                                        console.error('❌ Streaming TTS failed, falling back to regular TTS:', error);
+                                        streamingTTS = null;
+                                        this.textToSpeech(fullResponse);
+                                    }
+                                } else if (ttsStarted && streamingTTS) {
+                                    // Send new tokens to streaming TTS
+                                    try {
+                                        await streamingTTS.sendText(data.token);
+                                    } catch (error) {
+                                        console.error('❌ Error sending text to streaming TTS:', error);
+                                        // Fallback to regular TTS
+                                        streamingTTS = null;
+                                        this.textToSpeech(fullResponse);
+                                    }
+                                }
+                                
+                                // Keep label showing "RAG Thinking..." during streaming
+                                const label = document.querySelector('.sphere-label');
+                                if (label && !ttsStarted) {
+                                    label.textContent = 'RAG Thinking...';
+                                    label.style.color = '#0ea5e9'; // Sky blue
+                                }
                             } else if (data.text) {
                                 // Final response received
                                 fullResponse = data.text;
                                 isComplete = true;
                                 console.log('✅ Final RAG response:', fullResponse);
+                                
+                                // If TTS hasn't started yet, start it now with the full response
+                                if (!ttsStarted) {
+                                    console.log('🎤 Starting TTS with complete response...');
+                                    this.textToSpeech(fullResponse);
+                                } else if (streamingTTS) {
+                                    // Close streaming TTS
+                                    await streamingTTS.close();
+                                }
                             }
                         } catch (e) {
                             console.log('📝 Raw SSE data:', line);
@@ -469,6 +627,8 @@ class ElevenLabsConversationalAI {
             this.handleAIResponse(`TTS Error: ${error.message}. Please check your API key and try again.`);
         }
     }
+    
+
     
     async processAudioQueue() {
         if (this.audioQueue.length === 0 || this.isPlaying) {
@@ -610,12 +770,16 @@ class ElevenLabsConversationalAI {
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
             
+
+            
             // Set playback speed (1.0 = normal, 1.2 = 20% faster, 1.5 = 50% faster)
             audio.playbackRate = 1.1;
             
             audio.onended = () => {
                 console.log('✅ Audio response finished playing');
                 URL.revokeObjectURL(audioUrl);
+                
+
                 
                 // Mark as not playing and continue with queue
                 this.isPlaying = false;
@@ -660,34 +824,14 @@ class ElevenLabsConversationalAI {
         }
     }
     
-    closeChat() {
-        console.log('🚪 Closing AI session...');
-        
-        // Stop recording if active
-        if (this.isRecording) {
-            this.stopRecording();
-        }
-        
-        // Close WebSocket if connected
-        if (this.websocket) {
-            this.websocket.close();
-        }
-        
-        // Reset sphere label
-        this.resetSphereLabel();
-        
-        console.log('✅ AI session closed');
-    }
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎉 DOM loaded - initializing ElevenLabs AI...');
+    console.log('Initializing ElevenLabs AI...');
     
     // Create global instance
     window.elevenLabsAI = new ElevenLabsConversationalAI();
     
-    console.log('✅ ElevenLabs AI ready!');
+    console.log('ElevenLabs AI ready!');
 });
-
-console.log('🚀 ElevenLabs Conversational AI script loaded');
