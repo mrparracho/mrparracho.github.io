@@ -74,9 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🔄 Starting API request...');
         
         try {
-            console.log('🌐 Making fetch request to:', 'http://localhost:8001/ask');
+            console.log('🌐 Making fetch request to RAG API');
             // Connect to your local RAG API
-            const response = await fetch('http://localhost:8001/ask', {
+            const response = await fetch('https://mrparracho-github-io.onrender.com/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
