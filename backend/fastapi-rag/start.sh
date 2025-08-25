@@ -16,4 +16,4 @@ uv sync
 uv run python scripts/reset_collection.py
 
 # run the app
-nohup uv run uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload > app.log 2>&1 &
+nohup uv run uvicorn app.main:app --host 0.0.0.0 --port 8001 &
