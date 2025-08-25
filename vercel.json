@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "backend/fastapi-rag/app/main.py": {
-      "runtime": "@vercel/python",
+      "runtime": "@vercel/python@3.13",
       "maxDuration": 30
     }
   },
