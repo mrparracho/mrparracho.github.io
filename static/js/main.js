@@ -1,8 +1,6 @@
 // Main JavaScript for Portfolio Website
-console.log('=== SCRIPT LOADED ===');
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== DOM CONTENT LOADED ===');
     console.log('Initializing portfolio website...');
     
 
@@ -27,9 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initContactForm();
     initParticles();
     initAISphere();
-    initAIAssistant(); // Add this line
     
-    console.log('=== ALL INITIALIZATION COMPLETE ===');
+    console.log('Portfolio website initialized successfully');
 });
 
 // Loading Screen
@@ -178,7 +175,7 @@ function initSkillBars() {
 // Load Projects
 async function loadProjects() {
     try {
-        console.log('=== LOADING PROJECTS ===');
+        console.log('Loading projects...');
         
         // Check if projects-grid element exists
         const projectsGrid = document.getElementById('projects-grid');
@@ -222,7 +219,7 @@ async function loadProjects() {
             projectsGrid.classList.remove('single-project');
         }
         
-        console.log('=== PROJECTS LOADED SUCCESSFULLY ===');
+        console.log('Projects loaded successfully');
         
     } catch (error) {
         console.error('=== ERROR LOADING PROJECTS ===');
@@ -785,220 +782,12 @@ function initAISphere() {
         hasMoved = false;
     });
     
-    // Click event handled by ElevenLabs integration
-    // container.addEventListener('click', function() {
-    //     // This is now handled by the ElevenLabs integration
-    //     console.log('AI Sphere click handled by ElevenLabs integration');
-    // });
+
 }
 
-// AI Assistant functionality with RAG integration
-function initAIAssistant() {
-    const startChatButton = document.getElementById('start-ai-chat');
-    const modal = document.getElementById('rag-chat-modal');
-    const modalOverlay = document.getElementById('modal-overlay');
-    const modalClose = document.getElementById('modal-close');
-    const modalChatInput = document.getElementById('modal-chat-input');
-    const modalSendButton = document.getElementById('modal-send-message');
-    const modalChatMessages = document.getElementById('modal-chat-messages');
-    
 
-    
-    let isStreaming = false;
-    
-    // Start AI chat from main section
-    if (startChatButton) {
-        startChatButton.addEventListener('click', () => {
-            modal.classList.add('active');
-            modalChatInput.focus();
-        });
-    }
-    
-    // Close modal when overlay or close button is clicked
-    modalOverlay.addEventListener('click', closeModal);
-    modalClose.addEventListener('click', closeModal);
-    
-    // Close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-    
-    function closeModal() {
-        modal.classList.remove('active');
-        modalChatInput.value = '';
-    }
-    
 
-    
 
-    
-    // Modal send message functionality
-    modalChatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendModalMessage();
-        }
-    });
-    
-    modalSendButton.addEventListener('click', sendModalMessage);
-    
-    async function sendModalMessage() {
-        const message = modalChatInput.value.trim();
-        if (!message || isStreaming) return;
-        
-        // Add user message to modal
-        addModalMessage(message, 'user');
-        modalChatInput.value = '';
-        
-        // Disable input during streaming
-        isStreaming = true;
-        modalChatInput.disabled = true;
-        modalSendButton.disabled = true;
-        
-        // Add typing indicator
-        addModalTypingIndicator();
-        
-        try {
-            // Connect to your RAG API
-            const response = await fetch('http://localhost:8001/ask', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ question: message })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let fullResponse = '';
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            
-                            if (data.token) {
-                                if (fullResponse === '') {
-                                    removeModalTypingIndicator();
-                                    addModalMessage('', 'assistant');
-                                }
-                                fullResponse += data.token;
-                                const lastMessage = modalChatMessages.querySelector('.message.assistant:last-child .message-content');
-                                if (lastMessage) {
-                                    lastMessage.textContent = fullResponse;
-                                }
-                            } else if (data.text) {
-                                // Final response
-                                const lastMessage = modalChatMessages.querySelector('.message.assistant:last-child .message-content');
-                                if (lastMessage) {
-                                    lastMessage.textContent = data.text;
-                                }
-                            }
-                        } catch (e) {
-                            // Ignore parsing errors for incomplete chunks
-                        }
-                    }
-                }
-            }
-
-        } catch (error) {
-            console.error('Error:', error);
-            removeModalTypingIndicator();
-            addModalMessage(`Error: ${error.message}`, 'assistant');
-        } finally {
-            // Re-enable input
-            isStreaming = false;
-            modalChatInput.disabled = false;
-            modalSendButton.disabled = false;
-            modalChatInput.focus();
-        }
-    }
-    
-    function addModalMessage(content, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}`;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.textContent = content;
-        
-        messageDiv.appendChild(contentDiv);
-        modalChatMessages.appendChild(messageDiv);
-        modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
-    }
-    
-    function addModalTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'message assistant';
-        typingDiv.id = 'modal-typing-indicator';
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.textContent = 'Miguel is thinking...';
-        
-        typingDiv.appendChild(contentDiv);
-        modalChatMessages.appendChild(typingDiv);
-        modalChatMessages.scrollTop = modalChatMessages.scrollHeight;
-    }
-    
-    function removeModalTypingIndicator() {
-        const typingIndicator = document.getElementById('modal-typing-indicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
-    }
-}
-
-// CSS for typing indicator
-const typingCSS = `
-.typing-dots {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    padding: 8px 0;
-}
-
-.typing-dots span {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--primary);
-    animation: typing 1.4s infinite ease-in-out;
-}
-
-.typing-dots span:nth-child(1) { animation-delay: 0s; }
-.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typing {
-    0%, 60%, 100% {
-        transform: translateY(0);
-        opacity: 0.3;
-    }
-    30% {
-        transform: translateY(-10px);
-        opacity: 1;
-    }
-}
-`;
-
-// Add typing CSS to head
-const style = document.createElement('style');
-style.textContent = typingCSS;
-document.head.appendChild(style);
 
 // Add initAIAssistant to your main initialization function
 document.addEventListener('DOMContentLoaded', function() {
