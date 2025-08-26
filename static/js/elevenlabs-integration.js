@@ -17,6 +17,16 @@ class StreamingTTS {
             // Initialize audio context
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
+            // Ensure audio context is resumed for mobile browsers
+            if (this.audioContext.state === 'suspended') {
+                try {
+                    await this.audioContext.resume();
+                    console.log('✅ Streaming TTS: Audio context resumed');
+                } catch (error) {
+                    console.warn('⚠️ Streaming TTS: Could not resume audio context:', error);
+                }
+            }
+            
             // Connect to ElevenLabs WebSocket
             const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.modelId}&output_format=pcm_22050&xi-api-key=${this.apiKey}`;
             this.ws = new WebSocket(wsUrl);
@@ -141,10 +151,13 @@ class ElevenLabsConversationalAI {
             return;
         }
         
-        // Initialize audio context
+        // Initialize audio context (but don't resume until user interaction)
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            console.log('✅ Audio context initialized');
+            console.log('✅ Audio context initialized (state:', this.audioContext.state, ')');
+            
+            // Listen for user interaction to resume audio context
+            this.setupAudioContextResume();
         } catch (error) {
             console.error('❌ Failed to initialize audio context:', error);
             return;
@@ -193,6 +206,36 @@ class ElevenLabsConversationalAI {
         label.style.color = '#f59e0b'; // Amber
         
         console.log('✅ Sphere is now decorative only - interaction moved to talk button');
+    }
+    
+    setupAudioContextResume() {
+        // Set up one-time user interaction listener to resume audio context
+        const resumeAudioContext = async () => {
+            if (this.audioContext && this.audioContext.state === 'suspended') {
+                try {
+                    await this.audioContext.resume();
+                    console.log('✅ Audio context resumed after user interaction');
+                } catch (error) {
+                    console.error('❌ Failed to resume audio context:', error);
+                }
+            }
+        };
+        
+        // Add listeners for both mouse and touch events
+        const events = ['click', 'touchstart', 'touchend', 'mousedown'];
+        const onFirstInteraction = () => {
+            resumeAudioContext();
+            // Remove listeners after first interaction
+            events.forEach(event => {
+                document.removeEventListener(event, onFirstInteraction, true);
+            });
+        };
+        
+        events.forEach(event => {
+            document.addEventListener(event, onFirstInteraction, true);
+        });
+        
+        console.log('🎧 Audio context resume listeners set up for mobile compatibility');
     }
     
     async handleSphereClick(e) {
@@ -797,6 +840,16 @@ class ElevenLabsConversationalAI {
         try {
             console.log('🔊 Playing audio response...');
             
+            // Ensure AudioContext is resumed for mobile browsers
+            if (this.audioContext && this.audioContext.state === 'suspended') {
+                try {
+                    await this.audioContext.resume();
+                    console.log('✅ Audio context resumed before playback');
+                } catch (error) {
+                    console.warn('⚠️ Could not resume audio context:', error);
+                }
+            }
+            
             // Update talk button to responding state
             const talkButton = document.getElementById('talk-button');
             if (talkButton) {
@@ -815,7 +868,9 @@ class ElevenLabsConversationalAI {
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
             
-
+            // Set audio attributes for better mobile compatibility
+            audio.preload = 'auto';
+            audio.crossOrigin = 'anonymous';
             
             // Set playback speed (1.0 = normal, 1.2 = 20% faster, 1.5 = 50% faster)
             audio.playbackRate = 1.1;
@@ -874,10 +929,17 @@ class ElevenLabsConversationalAI {
                     // Show a message to the user
                     const label = document.querySelector('.sphere-label');
                     if (label) {
-                        label.textContent = 'Click to enable audio';
+                        label.textContent = 'Tap to enable audio';
                         label.style.color = '#ef4444'; // Red
                         label.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
                     }
+                    
+                    // For mobile, create a play button that users can tap
+                    this.createMobileAudioPrompt(audio, text);
+                    return; // Don't throw error, handle gracefully
+                } else if (playError.name === 'AbortError') {
+                    console.log('🔄 Audio playback was interrupted, this is normal on mobile');
+                    return; // Don't treat as error
                 }
                 throw playError;
             }
@@ -893,6 +955,53 @@ class ElevenLabsConversationalAI {
             
             this.handleAIResponse('Voice playback failed. Here is the text: ' + text);
         }
+    }
+    
+    createMobileAudioPrompt(audio, text) {
+        console.log('📱 Creating mobile audio prompt for user interaction');
+        
+        // Create a temporary play button for mobile users
+        const playButton = document.createElement('button');
+        playButton.innerHTML = '🔊 Tap to play response';
+        playButton.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            padding: 15px 30px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        `;
+        
+        // Add click handler to play audio
+        playButton.onclick = async () => {
+            try {
+                await audio.play();
+                document.body.removeChild(playButton);
+                console.log('✅ Mobile audio prompt successful');
+            } catch (error) {
+                console.error('❌ Mobile audio prompt failed:', error);
+                // Fallback to text display
+                this.handleAIResponse(text);
+                document.body.removeChild(playButton);
+            }
+        };
+        
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            if (document.body.contains(playButton)) {
+                document.body.removeChild(playButton);
+                this.handleAIResponse(text);
+            }
+        }, 10000);
+        
+        document.body.appendChild(playButton);
     }
     
     handleAIResponse(responseText) {

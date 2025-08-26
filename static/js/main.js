@@ -1263,6 +1263,16 @@ function initTalkButton() {
     talkButton.addEventListener('mousedown', async (e) => {
         e.preventDefault();
         
+        // Ensure audio context is resumed on first click
+        if (window.elevenLabsAI && window.elevenLabsAI.audioContext && window.elevenLabsAI.audioContext.state === 'suspended') {
+            try {
+                await window.elevenLabsAI.audioContext.resume();
+                console.log('✅ Desktop: Audio context resumed on click');
+            } catch (error) {
+                console.warn('⚠️ Desktop: Could not resume audio context:', error);
+            }
+        }
+        
         if (!hasPlayedWelcome) {
             // First press - play welcome message
             hasPlayedWelcome = true;
@@ -1346,6 +1356,16 @@ function initTalkButton() {
     // Touch support for mobile devices
     talkButton.addEventListener('touchstart', async (e) => {
         e.preventDefault();
+        
+        // Ensure audio context is resumed on first touch for mobile
+        if (window.elevenLabsAI && window.elevenLabsAI.audioContext && window.elevenLabsAI.audioContext.state === 'suspended') {
+            try {
+                await window.elevenLabsAI.audioContext.resume();
+                console.log('✅ Mobile: Audio context resumed on touch');
+            } catch (error) {
+                console.warn('⚠️ Mobile: Could not resume audio context:', error);
+            }
+        }
         
         if (!hasPlayedWelcome) {
             // First touch - play welcome message
