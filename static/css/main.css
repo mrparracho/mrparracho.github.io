@@ -337,8 +337,8 @@ p {
 
 .ai-sphere-container {
     position: relative;
-    width: 400px;
-    height: 400px;
+    width: 300px;
+    height: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -347,8 +347,8 @@ p {
 }
 
 #threejs-container {
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height: 250px;
     border-radius: 50%;
     overflow: hidden;
     background: radial-gradient(
@@ -668,6 +668,28 @@ p {
     opacity: 0.9;
     transition: all 0.3s ease;
     text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    cursor: pointer;
+}
+
+.sphere-label:hover {
+    color: rgba(0, 191, 255, 0.9);
+    transform: scale(1.05);
+    text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
+}
+
+.sphere-label.pulse {
+    animation: labelPulse 2s ease-in-out;
+}
+
+@keyframes labelPulse {
+    0%, 100% {
+        transform: scale(1);
+        color: #3B82F6;
+    }
+    50% {
+        transform: scale(1.1);
+        color: rgba(0, 191, 255, 0.9);
+    }
 }
 
 .ai-sphere:hover + .sphere-label {
@@ -910,8 +932,8 @@ section {
 
 /* Experience Section */
 .experience {
-    background: var(--bg-primary) !important;
-    background-color: var(--bg-primary) !important;
+    padding: 100px 0;
+    background: var(--bg-primary);
 }
 
 .timeline {
@@ -1006,8 +1028,24 @@ section {
 
 /* Projects Section */
 .projects {
-    background: var(--bg-secondary) !important;
-    background-color: var(--bg-secondary) !important;
+    padding: 100px 0;
+    background: var(--bg-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.projects .particles-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.projects .container {
+    position: relative;
+    z-index: 2;
 }
 
 .projects-grid {
@@ -1159,7 +1197,24 @@ section {
 
 /* Skills Section */
 .skills {
-    background: var(--bg-secondary);
+    padding: 100px 0;
+    background: var(--bg-primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.skills .particles-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.skills .container {
+    position: relative;
+    z-index: 2;
 }
 
 .skills-categories {
@@ -1247,7 +1302,7 @@ section {
     background: linear-gradient(90deg, var(--primary), var(--accent));
     border-radius: 6px;
     transition: width 1.5s ease-out;
-    width: 0;
+    width: var(--skill-level, 0%);
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
@@ -1563,17 +1618,7 @@ section {
     to { opacity: 1; transform: translateX(0); }
 }
 
-/* Scroll Animations */
-.scroll-animate {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s ease-out;
-}
 
-.scroll-animate.animate {
-    opacity: 1;
-    transform: translateY(0);
-}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
@@ -1593,23 +1638,29 @@ section {
     background: var(--primary-dark);
 } 
 
-/* AI Assistant Section */
+/* AI Avatar Section */
 .ai-assistant {
-    padding: 100px 0;
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     position: relative;
     overflow: hidden;
+    padding-top: 70px;
 }
 
-.ai-assistant::before {
-    content: '';
+.ai-assistant .particles-bg {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23333" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.1;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.ai-assistant .container {
+    width: 100%;
 }
 
 .ai-assistant-content {
@@ -1618,25 +1669,32 @@ section {
     gap: 60px;
     align-items: center;
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .ai-assistant-info h2 {
-    color: var(--primary);
+    font-size: 2.5rem;
     margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .ai-description {
     font-size: 1.1rem;
     line-height: 1.7;
-    margin-bottom: 30px;
+    margin-bottom: 28px;
     color: var(--text-secondary);
 }
 
 .ai-features {
     display: flex;
-    gap: 20px;
-    margin-bottom: 40px;
+    gap: 12px;
+    margin-bottom: 32px;
     flex-wrap: wrap;
 }
 
@@ -1646,8 +1704,14 @@ section {
     gap: 8px;
     padding: 12px 16px;
     background: var(--bg-tertiary);
-    border-radius: var(--border-radius-sm);
+    border-radius: 12px;
     border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.feature:hover {
+    background: var(--bg-secondary);
+    transform: translateY(-2px);
 }
 
 .feature i {
@@ -1655,62 +1719,304 @@ section {
     font-size: 1.1rem;
 }
 
-.demo-container {
-    text-align: center;
-    padding: 40px;
-    background: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border);
-    position: relative;
+.feature span {
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-.ai-avatar {
-    position: relative;
-    margin-bottom: 30px;
+/* AI Avatar Demo Area */
+.ai-assistant-demo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.avatar-circle {
-    width: 120px;
-    height: 120px;
+.ai-avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 32px;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--accent) 100%);
+    border-radius: 24px;
+    border: 1px solid var(--primary);
+    box-shadow: 0 20px 40px rgba(0, 168, 255, 0.2);
+    max-width: 350px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-avatar-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="avatar-grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23avatar-grain)"/></svg>');
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.ai-sphere-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+#threejs-container {
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.ai-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+.ai-interaction-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.voice-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(15px);
+}
+
+.voice-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.5s ease;
+}
+
+.voice-button:hover::before {
+    left: 100%;
+}
+
+.voice-button:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(0, 168, 255, 0.3);
+}
+
+.voice-button:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 20px rgba(0, 168, 255, 0.2);
+}
+
+.button-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto;
-    font-size: 3rem;
+    box-shadow: 0 8px 20px rgba(0, 168, 255, 0.4);
+    transition: all 0.3s ease;
+}
+
+.button-icon i {
     color: white;
-    position: relative;
-    z-index: 2;
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
 }
 
-.pulse-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 140px;
-    height: 140px;
-    border: 2px solid var(--primary);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
+.voice-button.listening .button-icon {
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    box-shadow: 0 8px 20px rgba(100, 181, 246, 0.5);
+    animation: listeningPulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
+.voice-button.thinking .button-icon {
+    background: linear-gradient(135deg, var(--primary-dark), var(--accent));
+    box-shadow: 0 8px 20px rgba(0, 151, 230, 0.5);
+    animation: thinkingSpin 1s linear infinite;
+}
+
+.voice-button.responding .button-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+    animation: respondingPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes listeningPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 8px 20px rgba(100, 181, 246, 0.5);
     }
-    100% {
-        transform: translate(-50%, -50%) scale(1.3);
-        opacity: 0;
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 12px 30px rgba(100, 181, 246, 0.7);
     }
 }
 
-.demo-text p {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
+@keyframes thinkingSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes respondingPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.7);
+    }
+}
+
+.button-text {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    text-align: center;
+}
+
+.interaction-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.interaction-hint i {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.interaction-hint span {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
     font-style: italic;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive design for AI Avatar section */
+@media (max-width: 768px) {
+    .ai-assistant-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .ai-assistant-info h2 {
+        font-size: 2rem;
+        text-align: center;
+    }
+    
+    .ai-assistant-info {
+        text-align: center;
+    }
+    
+    .ai-avatar-container {
+        padding: 24px 20px;
+        max-width: 300px;
+    }
+    
+    #threejs-container {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .voice-button {
+        padding: 16px;
+    }
+    
+    .button-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .button-icon i {
+        font-size: 1.1rem;
+    }
+    
+    .ai-features {
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .feature {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
 }
 
 
@@ -1920,4 +2226,4 @@ section {
     .modal-body {
         height: 400px;
     }
-} 
+}

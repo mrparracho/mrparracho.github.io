@@ -42,7 +42,7 @@
 ## Technical Demonstrations
 
 ### AI-Powered Portfolio Assistant
-- Built an AI assistant using RAG (Retrieval-Augmented Generation) technology
+- Built an AI avatar using RAG (Retrieval-Augmented Generation) technology
 - Integrates with portfolio website for interactive Q&A
 - Technologies: FastAPI, OpenAI GPT, PostgreSQL with pgvector, React
 - Features: Real-time streaming responses, voice interaction capabilities

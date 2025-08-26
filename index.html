@@ -45,7 +45,7 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="#home" class="nav-link">Home</a></li>
-                <li><a href="#ai-assistant" class="nav-link">AI Assistant</a></li>
+                <li><a href="#ai-assistant" class="nav-link">AI Avatar</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
                 <li><a href="#experience" class="nav-link">Experience</a></li>
                 <li><a href="#projects" class="nav-link">Projects</a></li>
@@ -83,10 +83,7 @@
                 </div>
             </div>
             <div class="hero-visual">
-                <div class="ai-sphere-container">
-                    <div id="threejs-container"></div>
-                    <div class="sphere-label">AI Assistant</div>
-                </div>
+                <!-- Sphere moved to AI Avatar section -->
             </div>
         </div>
         <div class="scroll-indicator">
@@ -94,50 +91,56 @@
         </div>
     </section>
 
-    <!-- AI Assistant Section -->
+    <!-- AI Avatar Section -->
     <section id="ai-assistant" class="ai-assistant">
+        <div class="particles-bg" id="ai-particles"></div>
         <div class="container">
             <div class="ai-assistant-content">
                 <div class="ai-assistant-info">
-                    <h2 class="section-title">Meet My AI Assistant</h2>
+                    <h2 class="section-title">Meet My AI Avatar</h2>
                     <p class="ai-description">
-                        Designed and deployed by myself, my AI assistant can answer your questions about my background, 
-                        current situation, skills, and experience in my own voice.
+                        Designed and deployed by myself, to facilitate recruiters and hiring managers with prompt answers to their screening questions. 
+                        My AI avatar will tell you about my experience, skills, interests and much more in my own voice.
                     </p>
                     <div class="ai-features">
                         <div class="feature">
                             <i class="fas fa-brain"></i>
-                            <span>GPT-5 Powered</span>
+                            <span>RAG Powered</span>
                         </div>
                         <div class="feature">
                             <i class="fas fa-microphone"></i>
                             <span>Voice Cloning</span>
                         </div>
-                        <div class="feature">
-                            <i class="fas fa-comments"></i>
-                            <span>Real-time Chat</span>
-                        </div>
+                        
                     </div>
                     <button class="btn btn-primary" id="start-ai-chat">
-                        <i class="fas fa-play"></i>
-                        Start Conversation
+                        <i class="fas fa-comments"></i>
+                        Start Text Chat
                     </button>
                 </div>
                 <div class="ai-assistant-demo">
-                    <div class="demo-container">
-                        <div class="ai-avatar">
-                            <div class="avatar-circle">
-                                <i class="fas fa-robot"></i>
+                    <div class="ai-avatar-container">
+                        <div class="ai-sphere-wrapper">
+                            <div id="threejs-container"></div>
+                            <div class="ai-status-indicator">
+                                <div class="status-dot"></div>
+                                <span class="status-text">Ready to chat</span>
                             </div>
-                            <div class="pulse-ring"></div>
                         </div>
-                        <div class="demo-text">
-                            <p>"Hi! I'm Miguel's AI assistant. Ask me anything about his experience, skills, or projects!"</p>
+                        <div class="ai-interaction-area">
+                            <button class="voice-button" id="talk-button">
+                                <div class="button-icon">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                                <span class="button-text">Start Voice Chat</span>
+                            </button>
+                            <div class="interaction-hint">
+                                <i class="fas fa-info-circle"></i>
+                                <span>If my voice is not available, try the text chat</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-
             </div>
         </div>
     </section>
@@ -184,8 +187,9 @@
 
     <!-- Projects Section -->
     <section id="projects" class="projects">
+        <div class="particles-bg" id="projects-particles"></div>
         <div class="container">
-            <h2 class="section-title">Featured Projects</h2>
+            <h2 class="section-title">Featured AI/ML Projects</h2>
             <div class="projects-grid" id="projects-grid">
                 <!-- Projects will be loaded dynamically -->
             </div>
@@ -270,6 +274,7 @@
 
     <!-- Skills Section -->
     <section id="skills" class="skills">
+        <div class="particles-bg" id="skills-particles"></div>
         <div class="container">
             <h2 class="section-title">Technical Skills</h2>
             <div class="skills-categories">
@@ -562,7 +567,7 @@
         <div class="modal-overlay" id="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Miguel's AI Assistant</h3>
+                                        <h3></h3>
                 <p>Ask me anything about my background, skills, and experience</p>
                 <button class="modal-close" id="modal-close">
                     <i class="fas fa-times"></i>
@@ -572,7 +577,7 @@
                 <div class="chat-messages" id="modal-chat-messages">
                     <div class="message assistant">
                         <div class="message-content">
-                            <p>Hello! I'm Miguel's AI assistant. I can answer questions about his background, skills, experience, and projects. What would you like to know?</p>
+                            <p>Hi, Miguel here! Yes, I know.. pretty cool that now I can answer your questions 24/7. What would you like to know?</p>
                         </div>
                     </div>
                 </div>

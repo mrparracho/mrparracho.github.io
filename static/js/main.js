@@ -9,8 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initLoadingScreen();
     initNavigation();
     initTypingEffect();
-    initScrollAnimations();
-    initSkillBars();
     
     // Test projects loading with a simple approach
     setTimeout(() => {
@@ -25,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initContactForm();
     initParticles();
     initAISphere();
+    initSkillBars(); // Initialize skill progress bars
+    initTalkButton(); // Add talk button functionality
     
     console.log('Portfolio website initialized successfully');
 });
@@ -79,15 +79,7 @@ function initNavigation() {
         });
     });
     
-    // Navbar background on scroll
-    window.addEventListener('scroll', () => {
-        const navbar = document.querySelector('.navbar');
-        if (window.scrollY > 100) {
-            navbar.style.background = 'rgba(10, 10, 10, 0.98)';
-        } else {
-            navbar.style.background = 'rgba(10, 10, 10, 0.95)';
-        }
-    });
+
 }
 
 // Typing Effect
@@ -130,47 +122,9 @@ function initTypingEffect() {
     setTimeout(type, 1000);
 }
 
-// Scroll Animations
-function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate');
-            }
-        });
-    }, observerOptions);
-    
-    // Observe elements for animation
-    const animateElements = document.querySelectorAll('.timeline-item, .skill-item, .project-card');
-    animateElements.forEach(el => {
-        el.classList.add('scroll-animate');
-        observer.observe(el);
-    });
-}
 
-// Skill Bars Animation
-function initSkillBars() {
-    const skillBars = document.querySelectorAll('.skill-progress');
-    
-    const skillObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const level = entry.target.getAttribute('data-level');
-                entry.target.style.width = level + '%';
-                skillObserver.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    skillBars.forEach(bar => {
-        skillObserver.observe(bar);
-    });
-}
+
+
 
 // Load Projects
 async function loadProjects() {
@@ -376,6 +330,7 @@ function showNotification(message, type = 'info') {
 // Particles Background
 function initParticles() {
     if (typeof particlesJS !== 'undefined') {
+        // Initialize particles for hero section
         particlesJS('particles-js', {
             particles: {
                 number: {
@@ -478,60 +433,321 @@ function initParticles() {
             },
             retina_detect: true
         });
+        
+        // Common particle configuration for sections
+        const sectionParticleConfig = {
+            particles: {
+                number: {
+                    value: 70,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#00a8ff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.4,
+                    random: false,
+                    anim: {
+                        enable: false,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: {
+                        enable: false,
+                        speed: 40,
+                        size_min: 0.1,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 140,
+                    color: '#00a8ff',
+                    opacity: 0.3,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false,
+                    attract: {
+                        enable: false,
+                        rotateX: 600,
+                        rotateY: 1200
+                    }
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        };
+
+        // Initialize particles for AI Avatar section (more prominent)
+        particlesJS('ai-particles', {
+            particles: {
+                number: {
+                    value: 60,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#00a8ff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.3,
+                    random: false,
+                    anim: {
+                        enable: false,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 2,
+                    random: true,
+                    anim: {
+                        enable: false,
+                        speed: 40,
+                        size_min: 0.1,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 120,
+                    color: '#00a8ff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false,
+                    attract: {
+                        enable: false,
+                        rotateX: 600,
+                        rotateY: 1200
+                    }
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 2
+                    }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Initialize particles for Projects and Skills sections (forced identical configuration)
+        const identicalConfig = {
+            particles: {
+                number: {
+                    value: 70,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: '#00a8ff'
+                },
+                shape: {
+                    type: 'circle',
+                    stroke: {
+                        width: 0,
+                        color: '#000000'
+                    }
+                },
+                opacity: {
+                    value: 0.4,
+                    random: false,
+                    anim: {
+                        enable: false,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: {
+                        enable: false,
+                        speed: 40,
+                        size_min: 0.1,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 140,
+                    color: '#00a8ff',
+                    opacity: 0.3,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false,
+                    attract: {
+                        enable: false,
+                        rotateX: 600,
+                        rotateY: 1200
+                    }
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: 'grab'
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: 'push'
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        };
+        
+        console.log('Initializing projects particles with forced identical config...');
+        particlesJS('projects-particles', identicalConfig);
+        
+        console.log('Initializing skills particles with forced identical config...');
+        particlesJS('skills-particles', identicalConfig);
+    } else {
+        console.log('Particles.js not loaded');
     }
 }
 
-// Parallax Effect
-function initParallax() {
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const parallaxElements = document.querySelectorAll('.parallax');
-        
-        parallaxElements.forEach(element => {
-            const speed = element.dataset.speed || 0.5;
-            element.style.transform = `translateY(${scrolled * speed}px)`;
-        });
-    });
-}
-
-// Smooth reveal animations
-function revealOnScroll() {
-    const reveals = document.querySelectorAll('.reveal');
+// Skill Bars Animation
+function initSkillBars() {
+    const skillBars = document.querySelectorAll('.skill-progress');
     
-    reveals.forEach(element => {
-        const windowHeight = window.innerHeight;
-        const elementTop = element.getBoundingClientRect().top;
-        const elementVisible = 150;
-        
-        if (elementTop < windowHeight - elementVisible) {
-            element.classList.add('active');
+    if (skillBars.length === 0) {
+        console.log('No skill bars found');
+        return;
+    }
+    
+    console.log('Initializing skill bars...');
+    
+    skillBars.forEach(bar => {
+        const level = bar.getAttribute('data-level');
+        if (level) {
+            // Set the CSS variable for the width
+            bar.style.setProperty('--skill-level', level + '%');
+            console.log(`Set skill bar to ${level}%`);
         }
     });
+    
+    console.log('✅ Skill bars initialized');
 }
 
-// Initialize additional features
-window.addEventListener('scroll', revealOnScroll);
-window.addEventListener('load', () => {
-    initParallax();
-    revealOnScroll();
-});
 
-// Utility function to debounce scroll events
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
 
-// Apply debouncing to scroll events
-const debouncedRevealOnScroll = debounce(revealOnScroll, 10);
-window.addEventListener('scroll', debouncedRevealOnScroll);
+
+
+// Global variables for sphere animation
+let sphereAnimationState = 'idle';
+let sphereAnimationStartTime = 0;
+let spherePulseIntensity = 0;
+let sphereThinkingRotationSpeed = 1;
+let sphereResponsePulseSpeed = 1;
+let sphereScene, sphereCamera, sphereRenderer, sphere, sphereMaterial, particles;
 
 // AI Sphere Interaction with Three.js
 function initAISphere() {
@@ -549,29 +765,31 @@ function initAISphere() {
         return;
     }
     
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
+    sphereScene = new THREE.Scene();
+    sphereCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    sphereRenderer = new THREE.WebGLRenderer({ 
         antialias: true, 
         alpha: true,
         powerPreference: "high-performance"
     });
     
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setClearColor(0x000000, 0);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(renderer.domElement);
+    sphereRenderer.setSize(container.clientWidth, container.clientHeight);
+    sphereRenderer.setPixelRatio(window.devicePixelRatio);
+    sphereRenderer.setClearColor(0x000000, 0);
+    sphereRenderer.shadowMap.enabled = true;
+    sphereRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(sphereRenderer.domElement);
     
     // Create cosmic sphere
     const sphereGeometry = new THREE.SphereGeometry(2, 64, 64);
     
     // Create custom shader material for the cosmic effect
-    const sphereMaterial = new THREE.ShaderMaterial({
+    sphereMaterial = new THREE.ShaderMaterial({
         uniforms: {
             time: { value: 0 },
-            resolution: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) }
+            resolution: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) },
+            pulseIntensity: { value: 0 },
+            stateColor: { value: new THREE.Color(0xffffff) }
         },
         vertexShader: `
             varying vec3 vNormal;
@@ -588,6 +806,8 @@ function initAISphere() {
         fragmentShader: `
             uniform float time;
             uniform vec2 resolution;
+            uniform float pulseIntensity;
+            uniform vec3 stateColor;
             varying vec3 vNormal;
             varying vec3 vPosition;
             varying vec2 vUv;
@@ -636,6 +856,18 @@ function initAISphere() {
                 vec3 color2 = mix(orange, pink, noise2);
                 vec3 finalColor = mix(color1, color2, noise3);
                 
+                // Apply state color tint with dynamic intensity
+                float colorIntensity = 0.4 + pulseIntensity * 0.3;
+                finalColor = mix(finalColor, stateColor, colorIntensity);
+                
+                // Apply pulse intensity with glow effect
+                finalColor *= (1.0 + pulseIntensity * 0.4);
+                
+                // Add state-dependent glow
+                if (pulseIntensity > 0.5) {
+                    finalColor += stateColor * pulseIntensity * 0.3;
+                }
+                
                 // Add depth and translucency
                 float fresnel = pow(1.0 - abs(dot(normal, viewDir)), 3.0);
                 finalColor += fresnel * vec3(1.0, 1.0, 1.0) * 0.3;
@@ -656,14 +888,14 @@ function initAISphere() {
         side: THREE.DoubleSide
     });
     
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     sphere.castShadow = true;
     sphere.receiveShadow = true;
-    scene.add(sphere);
+    sphereScene.add(sphere);
     
     // Add internal energy particles
     const particleCount = 100;
-    const particles = new THREE.Group();
+    particles = new THREE.Group();
     
     for (let i = 0; i < particleCount; i++) {
         const particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
@@ -683,35 +915,141 @@ function initAISphere() {
         particles.add(particle);
     }
     
-    scene.add(particles);
+    sphereScene.add(particles);
     
     // Add ambient and point lights
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    scene.add(ambientLight);
+    sphereScene.add(ambientLight);
     
     const pointLight = new THREE.PointLight(0xffffff, 1, 100);
     pointLight.position.set(5, 5, 5);
     pointLight.castShadow = true;
-    scene.add(pointLight);
+    sphereScene.add(pointLight);
     
     // Position camera
-    camera.position.z = 5;
+    sphereCamera.position.z = 5;
     
     // Animation loop
     function animate() {
         requestAnimationFrame(animate);
         
         const time = Date.now() * 0.001;
+        const deltaTime = time - sphereAnimationStartTime;
         
-        // Rotate sphere slowly
-        sphere.rotation.y += 0.005;
-        sphere.rotation.x += 0.002;
+        // Base rotation
+        let baseRotationSpeed = 0.005;
+        let baseParticleSpeed = 0.01;
         
-        // Animate particles
+        // Apply animation state effects
+        switch (sphereAnimationState) {
+            case 'listening':
+                // Breathing effect with cyan/blue gradient
+                spherePulseIntensity = Math.sin(time * 6) * 0.4 + 0.6;
+                sphere.scale.setScalar(0.85 + spherePulseIntensity * 0.15);
+                sphereMaterial.uniforms.pulseIntensity.value = spherePulseIntensity;
+                sphereMaterial.uniforms.stateColor.value.setHex(0x06b6d4); // Cyan
+                // Gentle floating motion
+                sphere.position.y = Math.sin(time * 2) * 0.1;
+                // Subtle rotation
+                sphere.rotation.y += 0.003;
+                sphere.rotation.x += 0.001;
+                break;
+                
+            case 'thinking':
+                // Intense spinning with purple/indigo gradient
+                baseRotationSpeed *= 4;
+                sphere.rotation.y += baseRotationSpeed * sphereThinkingRotationSpeed;
+                sphere.rotation.x += baseRotationSpeed * 0.7 * sphereThinkingRotationSpeed;
+                sphere.rotation.z += baseRotationSpeed * 0.3 * sphereThinkingRotationSpeed;
+                sphereMaterial.uniforms.stateColor.value.setHex(0x7c3aed); // Purple
+                // Pulsing scale
+                sphere.scale.setScalar(0.9 + Math.sin(time * 10) * 0.1);
+                // Wobble effect
+                sphere.rotation.z = Math.sin(time * 6) * 0.15;
+                // Particle intensity
+                sphereMaterial.uniforms.pulseIntensity.value = Math.sin(time * 8) * 0.6 + 0.4;
+                break;
+                
+            case 'responding':
+                // Energetic pulsing with emerald/green gradient
+                spherePulseIntensity = Math.sin(time * 15) * 0.7 + 0.3;
+                sphere.scale.setScalar(0.8 + spherePulseIntensity * 0.2);
+                sphereMaterial.uniforms.pulseIntensity.value = spherePulseIntensity;
+                sphereMaterial.uniforms.stateColor.value.setHex(0x059669); // Emerald
+                // Bouncing effect
+                sphere.position.y = Math.sin(time * 8) * 0.15;
+                // Rapid rotation
+                sphere.rotation.y += 0.02;
+                sphere.rotation.x += 0.01;
+                // Faster particle movement
+                baseParticleSpeed *= 3;
+                break;
+                
+            default: // idle
+                // Calm floating with warm gradient
+                sphere.scale.setScalar(1);
+                sphere.rotation.z = 0;
+                sphere.position.y = Math.sin(time * 1.5) * 0.05;
+                sphereMaterial.uniforms.pulseIntensity.value = Math.sin(time * 2) * 0.1;
+                sphereMaterial.uniforms.stateColor.value.setHex(0xf59e0b); // Amber
+                // Very slow rotation
+                sphere.rotation.y += 0.001;
+                sphere.rotation.x += 0.0005;
+                break;
+        }
+        
+        // Apply base rotation
+        sphere.rotation.y += baseRotationSpeed;
+        sphere.rotation.x += baseRotationSpeed * 0.4;
+        
+        // Animate particles with state-dependent effects
         particles.children.forEach((particle, index) => {
-            particle.position.x += Math.sin(time + index) * 0.01;
-            particle.position.y += Math.cos(time + index) * 0.01;
-            particle.position.z += Math.sin(time + index * 0.5) * 0.01;
+            let particleSpeed = baseParticleSpeed;
+            let particleColor = particle.material.color;
+            
+            // State-dependent particle behavior
+            switch (sphereAnimationState) {
+                case 'listening':
+                    // Gentle floating particles
+                    particle.position.x += Math.sin(time * 0.5 + index) * particleSpeed * 0.5;
+                    particle.position.y += Math.cos(time * 0.5 + index) * particleSpeed * 0.5;
+                    particle.position.z += Math.sin(time * 0.3 + index * 0.5) * particleSpeed * 0.5;
+                    particle.material.opacity = 0.7 + Math.sin(time * 2 + index) * 0.3;
+                    particleColor.setHex(0x06b6d4); // Cyan
+                    break;
+                    
+                case 'thinking':
+                    // Chaotic, fast-moving particles
+                    particle.position.x += Math.sin(time * 4 + index) * particleSpeed * 2;
+                    particle.position.y += Math.cos(time * 4 + index) * particleSpeed * 2;
+                    particle.position.z += Math.sin(time * 3 + index * 0.5) * particleSpeed * 2;
+                    particle.material.opacity = 0.5 + Math.sin(time * 5 + index) * 0.5;
+                    particleColor.setHex(0x7c3aed); // Purple
+                    // Random size changes
+                    particle.scale.setScalar(0.5 + Math.sin(time * 3 + index) * 0.5);
+                    break;
+                    
+                case 'responding':
+                    // Energetic, expanding particles
+                    particle.position.x += Math.sin(time * 6 + index) * particleSpeed * 3;
+                    particle.position.y += Math.cos(time * 6 + index) * particleSpeed * 3;
+                    particle.position.z += Math.sin(time * 4 + index * 0.5) * particleSpeed * 3;
+                    particle.material.opacity = 0.9 + Math.sin(time * 8 + index) * 0.1;
+                    particleColor.setHex(0x059669); // Emerald
+                    // Pulsing size
+                    particle.scale.setScalar(0.8 + Math.sin(time * 4 + index) * 0.4);
+                    break;
+                    
+                default: // idle
+                    // Calm, slow-moving particles
+                    particle.position.x += Math.sin(time + index) * particleSpeed * 0.3;
+                    particle.position.y += Math.cos(time + index) * particleSpeed * 0.3;
+                    particle.position.z += Math.sin(time + index * 0.5) * particleSpeed * 0.3;
+                    particle.material.opacity = 0.6 + Math.sin(time * 1.5 + index) * 0.2;
+                    particleColor.setHex(0xf59e0b); // Amber
+                    particle.scale.setScalar(1);
+                    break;
+            }
             
             // Keep particles within sphere bounds
             const distance = particle.position.length();
@@ -723,19 +1061,70 @@ function initAISphere() {
         // Update shader time uniform
         sphereMaterial.uniforms.time.value = time;
         
-        renderer.render(scene, camera);
+        sphereRenderer.render(sphereScene, sphereCamera);
     }
     
     // Handle window resize
     window.addEventListener('resize', () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
+        sphereCamera.aspect = container.clientWidth / container.clientHeight;
+        sphereCamera.updateProjectionMatrix();
+        sphereRenderer.setSize(container.clientWidth, container.clientHeight);
         sphereMaterial.uniforms.resolution.value.set(container.clientWidth, container.clientHeight);
     });
     
     // Start animation
     animate();
+    
+    // Test animation after 3 seconds
+    setTimeout(() => {
+        console.log('🧪 Testing sphere animations...');
+        if (window.sphereAnimationController) {
+            console.log('✅ Animation controller found');
+            window.sphereAnimationController.setListening();
+            setTimeout(() => {
+                window.sphereAnimationController.setThinking();
+                setTimeout(() => {
+                    window.sphereAnimationController.setResponding();
+                    setTimeout(() => {
+                        window.sphereAnimationController.setIdle();
+                        console.log('✅ Animation test complete');
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        } else {
+            console.error('❌ Animation controller not found');
+        }
+    }, 3000);
+    
+    // Make animation control functions globally accessible
+    window.sphereAnimationController = {
+        setState: function(state) {
+            sphereAnimationState = state;
+            sphereAnimationStartTime = Date.now() * 0.001;
+            console.log('🎭 Sphere animation state changed to:', state, 'at time:', sphereAnimationStartTime);
+        },
+        
+        getState: function() {
+            return sphereAnimationState;
+        },
+        
+        // Specific state setters
+        setListening: function() {
+            this.setState('listening');
+        },
+        
+        setThinking: function() {
+            this.setState('thinking');
+        },
+        
+        setResponding: function() {
+            this.setState('responding');
+        },
+        
+        setIdle: function() {
+            this.setState('idle');
+        }
+    };
     
     // Add interaction with click support
     let isMouseDown = false;
@@ -789,9 +1178,245 @@ function initAISphere() {
 
 
 
-// Add initAIAssistant to your main initialization function
-document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
+// Talk button functionality
+function initTalkButton() {
+    console.log('🔧 Initializing talk button functionality...');
     
-    initAIAssistant(); // Add this line
-});
+    const talkButton = document.getElementById('talk-button');
+    const aiAssistantSection = document.getElementById('ai-assistant');
+    
+    console.log('Talk button element:', talkButton);
+    console.log('AI Assistant section:', aiAssistantSection);
+    
+    if (!talkButton || !aiAssistantSection) {
+        console.log('❌ Talk button elements not found');
+        return;
+    }
+    
+    console.log('✅ Talk button elements found, setting up interaction...');
+    
+    let hasPlayedWelcome = false;
+    let isRecording = false;
+    
+    async function playWelcomeMessage() {
+        try {
+            console.log('🎤 Playing welcome message...');
+            
+            // Update button to show it's processing
+            talkButton.classList.add('thinking');
+            talkButton.querySelector('.button-text').textContent = 'Playing welcome...';
+            
+            // Trigger sphere responding animation
+            if (window.sphereAnimationController) {
+                window.sphereAnimationController.setResponding();
+            }
+            
+            // Welcome message text
+            const welcomeText = "Hi, Miguel here! Yes, I know.. pretty cool that now I can answer your questions 24/7. What would you like to know? Click and hold to speak to me.";
+            
+            // Use ElevenLabs TTS to generate and play the welcome message
+            if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
+                // Generate and play the voice message
+                await window.elevenLabsAI.textToSpeech(welcomeText);
+                
+                // After welcome message, change button to microphone
+                setTimeout(() => {
+                    talkButton.classList.remove('thinking');
+                    talkButton.classList.add('ready');
+                    talkButton.querySelector('i').className = 'fas fa-microphone';
+                    talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
+                    
+                    // Reset sphere to idle
+                    if (window.sphereAnimationController) {
+                        window.sphereAnimationController.setIdle();
+                    }
+                }, 1000);
+                
+            } else {
+                // Fallback if no API key
+                talkButton.querySelector('.button-text').textContent = welcomeText;
+                
+                setTimeout(() => {
+                    talkButton.classList.remove('thinking');
+                    talkButton.classList.add('ready');
+                    talkButton.querySelector('i').className = 'fas fa-microphone';
+                    talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
+                }, 3000);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error playing welcome message:', error);
+            
+            // Fallback
+            talkButton.classList.remove('thinking');
+            talkButton.classList.add('ready');
+            talkButton.querySelector('i').className = 'fas fa-microphone';
+            talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
+            
+            if (window.sphereAnimationController) {
+                window.sphereAnimationController.setIdle();
+            }
+        }
+    }
+    
+    // Button press and hold handlers
+    talkButton.addEventListener('mousedown', async (e) => {
+        e.preventDefault();
+        
+        if (!hasPlayedWelcome) {
+            // First press - play welcome message
+            hasPlayedWelcome = true;
+            await playWelcomeMessage();
+        } else if (!isRecording) {
+            // Start voice recording on press
+            isRecording = true;
+            
+            // Update button to listening state
+            talkButton.classList.add('listening');
+            talkButton.querySelector('.button-text').textContent = 'Listening...';
+            
+            // Update status indicator
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Listening...';
+            }
+            
+            if (window.elevenLabsAI) {
+                await window.elevenLabsAI.startRecording();
+            }
+        }
+    });
+    
+    talkButton.addEventListener('mouseup', async (e) => {
+        e.preventDefault();
+        
+        if (isRecording && hasPlayedWelcome) {
+            // Stop voice recording on release
+            isRecording = false;
+            
+            // Update button to thinking state
+            talkButton.classList.remove('listening');
+            talkButton.classList.add('thinking');
+            talkButton.querySelector('.button-text').textContent = 'Processing...';
+            
+            // Update status indicator
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Processing...';
+            }
+            
+            // Trigger sphere thinking animation
+            if (window.sphereAnimationController) {
+                window.sphereAnimationController.setThinking();
+            }
+            
+            if (window.elevenLabsAI) {
+                await window.elevenLabsAI.stopRecording();
+            }
+        }
+    });
+    
+    // Handle mouse leave to stop recording if user moves away
+    talkButton.addEventListener('mouseleave', async (e) => {
+        if (isRecording && hasPlayedWelcome) {
+            isRecording = false;
+            
+            // Update button to thinking state
+            talkButton.classList.remove('listening');
+            talkButton.classList.add('thinking');
+            talkButton.querySelector('.button-text').textContent = 'Processing...';
+            
+            // Update status indicator
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Processing...';
+            }
+            
+            // Trigger sphere thinking animation
+            if (window.sphereAnimationController) {
+                window.sphereAnimationController.setThinking();
+            }
+            
+            if (window.elevenLabsAI) {
+                await window.elevenLabsAI.stopRecording();
+            }
+        }
+    });
+    
+    // Touch support for mobile devices
+    talkButton.addEventListener('touchstart', async (e) => {
+        e.preventDefault();
+        
+        if (!hasPlayedWelcome) {
+            // First touch - play welcome message
+            hasPlayedWelcome = true;
+            await playWelcomeMessage();
+        } else if (!isRecording) {
+            // Start voice recording on touch
+            isRecording = true;
+            
+            // Update button to listening state
+            talkButton.classList.add('listening');
+            talkButton.querySelector('.button-text').textContent = 'Listening...';
+            
+            if (window.elevenLabsAI) {
+                await window.elevenLabsAI.startRecording();
+            }
+        }
+    });
+    
+    talkButton.addEventListener('touchend', async (e) => {
+        e.preventDefault();
+        
+        if (isRecording && hasPlayedWelcome) {
+            // Stop voice recording on touch end
+            isRecording = false;
+            
+            // Update button to thinking state
+            talkButton.classList.remove('listening');
+            talkButton.classList.add('thinking');
+            talkButton.querySelector('.button-text').textContent = 'Processing...';
+            
+            // Update status indicator
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Processing...';
+            }
+            
+            // Trigger sphere thinking animation
+            if (window.sphereAnimationController) {
+                window.sphereAnimationController.setThinking();
+            }
+            
+            if (window.elevenLabsAI) {
+                await window.elevenLabsAI.stopRecording();
+            }
+        }
+    });
+    
+    // Add pulse animation to sphere label when section is visible
+    function checkSectionVisibility() {
+        const rect = aiAssistantSection.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        
+        if (rect.top < windowHeight * 0.5 && rect.bottom > windowHeight * 0.5) {
+            const sphereLabel = document.querySelector('.sphere-label');
+            if (sphereLabel) {
+                sphereLabel.classList.add('pulse');
+                setTimeout(() => {
+                    sphereLabel.classList.remove('pulse');
+                }, 2000);
+            }
+        }
+    }
+    
+    // Check on scroll
+    window.addEventListener('scroll', checkSectionVisibility);
+    
+    // Check on page load
+    setTimeout(checkSectionVisibility, 100);
+    
+    console.log('✅ Talk button functionality initialized');
+}
+
+// Note: initWelcomeMessage is now called in the main DOMContentLoaded listener
