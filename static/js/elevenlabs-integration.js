@@ -130,6 +130,8 @@ class ElevenLabsConversationalAI {
         this.audioContext = null;
         this.audioQueue = [];
         this.isPlaying = false;
+        this.audioUnlocked = false; // Track if audio has been unlocked
+        this.unlockedAudio = null; // Store unlocked audio element
         
         // ElevenLabs Configuration
         this.elevenLabsApiKey = 'sk_e7a2441a1a89bdf683388edc0083242104e50e6aaf4ec79c';
@@ -209,33 +211,55 @@ class ElevenLabsConversationalAI {
     }
     
     setupAudioContextResume() {
-        // Set up one-time user interaction listener to resume audio context
-        const resumeAudioContext = async () => {
-            if (this.audioContext && this.audioContext.state === 'suspended') {
-                try {
+        // Set up comprehensive audio unlock for mobile browsers
+        const unlockAudio = async () => {
+            if (this.audioUnlocked) return;
+            
+            try {
+                console.log('🔓 Unlocking audio for mobile browsers...');
+                
+                // Resume AudioContext
+                if (this.audioContext && this.audioContext.state === 'suspended') {
                     await this.audioContext.resume();
-                    console.log('✅ Audio context resumed after user interaction');
-                } catch (error) {
-                    console.error('❌ Failed to resume audio context:', error);
+                    console.log('✅ Audio context resumed');
                 }
+                
+                // Create and play a silent audio file to unlock HTML5 Audio
+                const silentAudio = new Audio();
+                silentAudio.src = 'data:audio/wav;base64,UklGRnoAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAAAAAAAAAAAAAAAAAAA=';
+                silentAudio.volume = 0;
+                silentAudio.preload = 'auto';
+                
+                // Attempt to play the silent audio
+                try {
+                    const playPromise = silentAudio.play();
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                    }
+                    console.log('✅ Silent audio played successfully - mobile audio unlocked');
+                    this.audioUnlocked = true;
+                    this.unlockedAudio = silentAudio;
+                } catch (playError) {
+                    console.log('ℹ️ Silent audio play blocked, will try again on next interaction');
+                }
+                
+            } catch (error) {
+                console.warn('⚠️ Audio unlock attempt failed:', error);
             }
         };
         
         // Add listeners for both mouse and touch events
-        const events = ['click', 'touchstart', 'touchend', 'mousedown'];
+        const events = ['click', 'touchstart', 'touchend', 'mousedown', 'keydown'];
         const onFirstInteraction = () => {
-            resumeAudioContext();
-            // Remove listeners after first interaction
-            events.forEach(event => {
-                document.removeEventListener(event, onFirstInteraction, true);
-            });
+            unlockAudio();
+            // Don't remove listeners - we might need multiple attempts
         };
         
         events.forEach(event => {
-            document.addEventListener(event, onFirstInteraction, true);
+            document.addEventListener(event, onFirstInteraction, { once: false, passive: true });
         });
         
-        console.log('🎧 Audio context resume listeners set up for mobile compatibility');
+        console.log('🎧 Advanced audio unlock system set up for mobile compatibility');
     }
     
     async handleSphereClick(e) {
@@ -840,168 +864,257 @@ class ElevenLabsConversationalAI {
         try {
             console.log('🔊 Playing audio response...');
             
-            // Ensure AudioContext is resumed for mobile browsers
-            if (this.audioContext && this.audioContext.state === 'suspended') {
-                try {
-                    await this.audioContext.resume();
-                    console.log('✅ Audio context resumed before playback');
-                } catch (error) {
-                    console.warn('⚠️ Could not resume audio context:', error);
-                }
+            // Update UI to responding state first
+            this.updateUIToResponding();
+            
+            // Try multiple approaches for seamless mobile audio
+            let audioPlayed = false;
+            
+            // Approach 1: Try direct audio playback (works if audio is unlocked)
+            if (this.audioUnlocked) {
+                audioPlayed = await this.tryDirectAudioPlayback(audioBlob, text);
             }
             
-            // Update talk button to responding state
-            const talkButton = document.getElementById('talk-button');
-            if (talkButton) {
-                talkButton.classList.remove('thinking');
-                talkButton.classList.add('responding');
-                talkButton.querySelector('.button-text').textContent = 'Answering...';
+            // Approach 2: Try with audio context unlock
+            if (!audioPlayed) {
+                audioPlayed = await this.tryAudioWithUnlock(audioBlob, text);
             }
             
-            // Update status indicator to show playing
-            const statusText = document.querySelector('.status-text');
-            if (statusText) {
-                statusText.textContent = 'Answering...';
+            // Approach 3: Use the pre-unlocked audio element (most reliable on mobile)
+            if (!audioPlayed && this.unlockedAudio) {
+                audioPlayed = await this.tryUnlockedAudioPlayback(audioBlob, text);
             }
             
-            // Create audio element and play
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            
-            // Set audio attributes for better mobile compatibility
-            audio.preload = 'auto';
-            audio.crossOrigin = 'anonymous';
-            
-            // Set playback speed (1.0 = normal, 1.2 = 20% faster, 1.5 = 50% faster)
-            audio.playbackRate = 1.1;
-            
-            audio.onended = () => {
-                console.log('✅ Audio response finished playing');
-                URL.revokeObjectURL(audioUrl);
-                
-                // Trigger sphere idle animation
-                if (window.sphereAnimationController) {
-                    window.sphereAnimationController.setIdle();
-                }
-                
-                // Reset talk button to ready state
-                const talkButton = document.getElementById('talk-button');
-                if (talkButton) {
-                    talkButton.classList.remove('listening', 'thinking', 'responding');
-                    talkButton.classList.add('ready');
-                    talkButton.querySelector('i').className = 'fas fa-microphone';
-                    talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
-                }
-                
-                // Reset status indicator
-                const statusText = document.querySelector('.status-text');
-                if (statusText) {
-                    statusText.textContent = 'Ready to chat';
-                }
-                
-                // Mark as not playing and continue with queue
-                this.isPlaying = false;
-                
-                // Process next item in queue if any
-                if (this.audioQueue.length > 0) {
-                    console.log('📋 Processing next item in audio queue...');
-                    this.processAudioQueue();
-                } else {
-                    // No more items, reset to ready state
-                    this.resetSphereLabel();
-                }
-            };
-            
-            audio.onerror = (error) => {
-                console.error('❌ Audio playback error:', error);
-                this.handleAIResponse('Error playing audio response. Here is the text: ' + text);
-            };
-            
-            // Play the audio
-            console.log('🎵 Attempting to play audio...');
-            try {
-                await audio.play();
-                console.log('✅ Audio started playing successfully');
-            } catch (playError) {
-                console.error('❌ Audio play failed:', playError);
-                if (playError.name === 'NotAllowedError') {
-                    console.log('🔇 Autoplay blocked by browser. User interaction required.');
-                    // Show a message to the user
-                    const label = document.querySelector('.sphere-label');
-                    if (label) {
-                        label.textContent = 'Tap to enable audio';
-                        label.style.color = '#ef4444'; // Red
-                        label.style.textShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
-                    }
-                    
-                    // For mobile, create a play button that users can tap
-                    this.createMobileAudioPrompt(audio, text);
-                    return; // Don't throw error, handle gracefully
-                } else if (playError.name === 'AbortError') {
-                    console.log('🔄 Audio playback was interrupted, this is normal on mobile');
-                    return; // Don't treat as error
-                }
-                throw playError;
+            // Approach 4: Only as last resort, show the tap prompt
+            if (!audioPlayed) {
+                console.log('📱 All seamless methods failed, showing mobile prompt as last resort');
+                this.createMobileAudioPrompt(audioBlob, text);
             }
             
         } catch (error) {
-            console.error('❌ Error playing audio:', error);
-            
-            // Update status to show voice not available
-            const statusText = document.querySelector('.status-text');
-            if (statusText) {
-                statusText.textContent = 'Voice not available';
-            }
-            
-            this.handleAIResponse('Voice playback failed. Here is the text: ' + text);
+            console.error('❌ Error in audio playback system:', error);
+            this.handleAIResponse('Voice service temporarily unavailable. Here is the text: ' + text);
         }
     }
     
-    createMobileAudioPrompt(audio, text) {
-        console.log('📱 Creating mobile audio prompt for user interaction');
+    updateUIToResponding() {
+        // Update talk button to responding state
+        const talkButton = document.getElementById('talk-button');
+        if (talkButton) {
+            talkButton.classList.remove('thinking');
+            talkButton.classList.add('responding');
+            talkButton.querySelector('.button-text').textContent = 'Answering...';
+        }
         
-        // Create a temporary play button for mobile users
-        const playButton = document.createElement('button');
-        playButton.innerHTML = '🔊 Tap to play response';
-        playButton.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10000;
-            padding: 15px 30px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        `;
+        // Update status indicator to show playing
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Answering...';
+        }
+    }
+    
+    async tryDirectAudioPlayback(audioBlob, text) {
+        try {
+            console.log('🎯 Attempting direct audio playback...');
+            
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            
+            // Configure audio for mobile compatibility
+            audio.preload = 'auto';
+            audio.volume = 1.0;
+            audio.playbackRate = 1.1;
+            
+            this.setupAudioEventHandlers(audio, audioUrl, text);
+            
+            await audio.play();
+            console.log('✅ Direct audio playback successful');
+            return true;
+            
+        } catch (error) {
+            console.log('⚠️ Direct audio playback failed:', error.name);
+            return false;
+        }
+    }
+    
+    async tryAudioWithUnlock(audioBlob, text) {
+        try {
+            console.log('🔓 Attempting audio with unlock...');
+            
+            // Force unlock attempt
+            if (this.audioContext && this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+            }
+            
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            
+            audio.preload = 'auto';
+            audio.volume = 1.0;
+            audio.playbackRate = 1.1;
+            
+            this.setupAudioEventHandlers(audio, audioUrl, text);
+            
+            await audio.play();
+            console.log('✅ Audio with unlock successful');
+            this.audioUnlocked = true;
+            return true;
+            
+        } catch (error) {
+            console.log('⚠️ Audio with unlock failed:', error.name);
+            return false;
+        }
+    }
+    
+    async tryUnlockedAudioPlayback(audioBlob, text) {
+        try {
+            console.log('🎵 Using pre-unlocked audio element...');
+            
+            // Reuse the unlocked audio element with new source
+            const audioUrl = URL.createObjectURL(audioBlob);
+            this.unlockedAudio.src = audioUrl;
+            this.unlockedAudio.volume = 1.0;
+            this.unlockedAudio.playbackRate = 1.1;
+            
+            this.setupAudioEventHandlers(this.unlockedAudio, audioUrl, text);
+            
+            await this.unlockedAudio.play();
+            console.log('✅ Pre-unlocked audio playback successful');
+            return true;
+            
+        } catch (error) {
+            console.log('⚠️ Pre-unlocked audio failed:', error.name);
+            return false;
+        }
+    }
+    
+    setupAudioEventHandlers(audio, audioUrl, text) {
+        audio.onended = () => {
+            console.log('✅ Audio response finished playing');
+            URL.revokeObjectURL(audioUrl);
+            this.onAudioComplete();
+        };
         
-        // Add click handler to play audio
-        playButton.onclick = async () => {
+        audio.onerror = (error) => {
+            console.error('❌ Audio playback error:', error);
+            URL.revokeObjectURL(audioUrl);
+            this.handleAIResponse('Audio error. Here is the text: ' + text);
+        };
+    }
+    
+    onAudioComplete() {
+        // Trigger sphere idle animation
+        if (window.sphereAnimationController) {
+            window.sphereAnimationController.setIdle();
+        }
+        
+        // Reset talk button to ready state
+        const talkButton = document.getElementById('talk-button');
+        if (talkButton) {
+            talkButton.classList.remove('listening', 'thinking', 'responding');
+            talkButton.classList.add('ready');
+            talkButton.querySelector('i').className = 'fas fa-microphone';
+            talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
+        }
+        
+        // Reset status indicator
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Ready to chat';
+        }
+        
+        // Mark as not playing and continue with queue
+        this.isPlaying = false;
+        
+        // Process next item in queue if any
+        if (this.audioQueue.length > 0) {
+            console.log('📋 Processing next item in audio queue...');
+            this.processAudioQueue();
+        } else {
+            // No more items, reset to ready state
+            this.resetSphereLabel();
+        }
+    }
+    
+    createMobileAudioPrompt(audioBlob, text) {
+        console.log('📱 Creating minimally intrusive mobile audio prompt...');
+        
+        // Update the sphere label to show tap instruction
+        const label = document.querySelector('.sphere-label');
+        if (label) {
+            label.textContent = 'Tap sphere for audio';
+            label.style.color = '#10b981'; // Green
+            label.style.textShadow = '0 0 10px rgba(16, 185, 129, 0.6)';
+            label.style.cursor = 'pointer';
+        }
+        
+        // Create audio element
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.preload = 'auto';
+        audio.volume = 1.0;
+        audio.playbackRate = 1.1;
+        
+        // Add click handler to sphere container
+        const sphereContainer = document.getElementById('threejs-container');
+        const playAudio = async () => {
             try {
                 await audio.play();
-                document.body.removeChild(playButton);
-                console.log('✅ Mobile audio prompt successful');
+                console.log('✅ Mobile audio prompt via sphere successful');
+                
+                // Set up normal audio event handlers
+                this.setupAudioEventHandlers(audio, audioUrl, text);
+                
+                // Remove the click handler
+                if (sphereContainer) {
+                    sphereContainer.removeEventListener('click', playAudio);
+                }
+                
+                // Reset label
+                if (label) {
+                    label.textContent = 'AI Avatar';
+                    label.style.color = '#f59e0b';
+                    label.style.textShadow = '';
+                    label.style.cursor = 'default';
+                }
+                
             } catch (error) {
                 console.error('❌ Mobile audio prompt failed:', error);
-                // Fallback to text display
                 this.handleAIResponse(text);
-                document.body.removeChild(playButton);
+                
+                // Clean up
+                URL.revokeObjectURL(audioUrl);
+                if (sphereContainer) {
+                    sphereContainer.removeEventListener('click', playAudio);
+                }
+                if (label) {
+                    label.textContent = 'AI Avatar';
+                    label.style.color = '#f59e0b';
+                    label.style.textShadow = '';
+                    label.style.cursor = 'default';
+                }
             }
         };
         
-        // Auto-remove after 10 seconds
-        setTimeout(() => {
-            if (document.body.contains(playButton)) {
-                document.body.removeChild(playButton);
-                this.handleAIResponse(text);
-            }
-        }, 10000);
+        if (sphereContainer) {
+            sphereContainer.addEventListener('click', playAudio, { once: true });
+        }
         
-        document.body.appendChild(playButton);
+        // Auto-fallback after 8 seconds
+        setTimeout(() => {
+            if (sphereContainer) {
+                sphereContainer.removeEventListener('click', playAudio);
+            }
+            if (label && label.textContent === 'Tap sphere for audio') {
+                console.log('📱 Audio prompt timeout, showing text response');
+                this.handleAIResponse(text);
+                label.textContent = 'AI Avatar';
+                label.style.color = '#f59e0b';
+                label.style.textShadow = '';
+                label.style.cursor = 'default';
+            }
+            URL.revokeObjectURL(audioUrl);
+        }, 8000);
     }
     
     handleAIResponse(responseText) {
