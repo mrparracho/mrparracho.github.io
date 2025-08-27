@@ -12,15 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Open modal when Start Conversation is clicked
     if (startChatButton) {
-        console.log('🎯 Start chat button found:', startChatButton);
         startChatButton.addEventListener('click', () => {
-            console.log('🚀 Opening modal...');
             modal.classList.add('active');
             modalChatInput.focus();
-            console.log('✅ Modal opened, input focused');
         });
-    } else {
-        console.error('❌ Start chat button not found!');
     }
     
     // Close modal when overlay or close button is clicked
@@ -51,12 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     async function sendMessage() {
-        console.log('📤 Send message called');
         const message = modalChatInput.value.trim();
-        console.log('📝 Message:', message);
         
         if (!message || isStreaming) {
-            console.log('❌ Message empty or already streaming');
             return;
         }
         
@@ -71,10 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add typing indicator
         addTypingIndicator();
-        console.log('🔄 Starting API request...');
         
         try {
-            console.log('🌐 Making fetch request to RAG API');
             // Connect to your local RAG API
             const response = await fetch('https://mrparracho-github-io.onrender.com/ask', {
                 method: 'POST',
@@ -83,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ question: message })
             });
-            console.log('📡 Response received:', response.status, response.statusText);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

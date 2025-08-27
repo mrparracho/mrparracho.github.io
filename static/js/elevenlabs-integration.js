@@ -12,7 +12,7 @@ class StreamingTTS {
     
     async start() {
         try {
-            console.log('🎤 Starting streaming TTS...');
+    
             
             // Initialize audio context
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -21,7 +21,7 @@ class StreamingTTS {
             if (this.audioContext.state === 'suspended') {
                 try {
                     await this.audioContext.resume();
-                    console.log('✅ Streaming TTS: Audio context resumed');
+        
                 } catch (error) {
                     console.warn('⚠️ Streaming TTS: Could not resume audio context:', error);
                 }
@@ -32,7 +32,7 @@ class StreamingTTS {
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = () => {
-                console.log('✅ WebSocket connected for streaming TTS');
+    
                 
                 // Send initialization message
                 this.ws.send(JSON.stringify({
@@ -63,18 +63,18 @@ class StreamingTTS {
                 }
                 
                 if (data.isFinal) {
-                    console.log('✅ Streaming TTS completed');
+        
                 }
             };
             
             this.ws.onerror = (error) => {
                 console.error('❌ WebSocket error:', error);
                 // Fallback to regular TTS if WebSocket fails
-                console.log('🔄 Falling back to regular TTS...');
+    
             };
             
             this.ws.onclose = () => {
-                console.log('🔌 WebSocket closed');
+    
             };
             
         } catch (error) {
@@ -145,8 +145,6 @@ class ElevenLabsConversationalAI {
     }
     
     async init() {
-        console.log('🎯 Initializing ElevenLabs AI...');
-        
         // Check browser compatibility
         if (!this.checkCompatibility()) {
             console.error('❌ Browser not compatible with ElevenLabs features');
@@ -156,7 +154,6 @@ class ElevenLabsConversationalAI {
         // Initialize audio context (but don't resume until user interaction)
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            console.log('✅ Audio context initialized (state:', this.audioContext.state, ')');
             
             // Listen for user interaction to resume audio context
             this.setupAudioContextResume();
@@ -170,8 +167,6 @@ class ElevenLabsConversationalAI {
         
         // Check RAG backend health
         this.checkRAGHealth();
-        
-        console.log('✅ ElevenLabs AI initialized successfully');
     }
     
     checkCompatibility() {
@@ -179,35 +174,19 @@ class ElevenLabsConversationalAI {
         const hasWebSocket = typeof WebSocket !== 'undefined';
         const hasAudioContext = typeof (window.AudioContext || window.webkitAudioContext) !== 'undefined';
         
-        console.log('🔍 Browser compatibility check:', {
-            MediaRecorder: hasMediaRecorder,
-            WebSocket: hasWebSocket,
-            AudioContext: hasAudioContext
-        });
-        
         return hasMediaRecorder && hasWebSocket && hasAudioContext;
     }
     
     setupSphereInteraction() {
         const sphere = document.getElementById('threejs-container');
-        const label = document.querySelector('.sphere-label');
         
-        if (!sphere || !label) {
+        if (!sphere) {
             console.error('❌ Required elements not found');
             return;
         }
         
-        console.log('🎯 Setting up sphere interaction...');
-        
         // Remove any existing click handlers from this script
         sphere.removeEventListener('click', this.handleSphereClick);
-        
-        // Update label to indicate it's ready
-        label.textContent = 'AI Avatar';
-        label.style.cursor = 'default';
-        label.style.color = '#f59e0b'; // Amber
-        
-        console.log('✅ Sphere is now decorative only - interaction moved to talk button');
     }
     
     setupAudioContextResume() {
@@ -216,12 +195,9 @@ class ElevenLabsConversationalAI {
             if (this.audioUnlocked) return;
             
             try {
-                console.log('🔓 Unlocking audio for mobile browsers...');
-                
                 // Resume AudioContext
                 if (this.audioContext && this.audioContext.state === 'suspended') {
                     await this.audioContext.resume();
-                    console.log('✅ Audio context resumed');
                 }
                 
                 // Create and play a silent audio file to unlock HTML5 Audio
@@ -236,11 +212,10 @@ class ElevenLabsConversationalAI {
                     if (playPromise !== undefined) {
                         await playPromise;
                     }
-                    console.log('✅ Silent audio played successfully - mobile audio unlocked');
                     this.audioUnlocked = true;
                     this.unlockedAudio = silentAudio;
                 } catch (playError) {
-                    console.log('ℹ️ Silent audio play blocked, will try again on next interaction');
+                    // Silent audio play blocked, will try again on next interaction
                 }
                 
             } catch (error) {
@@ -258,13 +233,9 @@ class ElevenLabsConversationalAI {
         events.forEach(event => {
             document.addEventListener(event, onFirstInteraction, { once: false, passive: true });
         });
-        
-        console.log('🎧 Advanced audio unlock system set up for mobile compatibility');
     }
     
     async handleSphereClick(e) {
-        console.log('🎯 Sphere clicked - starting voice capture');
-        
         // Prevent event bubbling
         e.preventDefault();
         e.stopPropagation();
@@ -280,8 +251,6 @@ class ElevenLabsConversationalAI {
     
     async startRecording() {
         try {
-            console.log('🎤 Starting voice recording...');
-            
             // Trigger sphere listening animation
             if (window.sphereAnimationController) {
                 window.sphereAnimationController.setListening();
@@ -313,8 +282,6 @@ class ElevenLabsConversationalAI {
                 mimeType = 'audio/ogg;codecs=opus';
             }
             
-            console.log('🎵 Using audio format:', mimeType);
-            
             // Create MediaRecorder with supported format
             this.mediaRecorder = new MediaRecorder(this.mediaStream, {
                 mimeType: mimeType
@@ -332,8 +299,6 @@ class ElevenLabsConversationalAI {
             
             this.mediaRecorder.start();
             this.isRecording = true;
-            
-            console.log('✅ Voice recording started');
             
         } catch (error) {
             console.error('❌ Failed to start recording:', error);
@@ -359,37 +324,32 @@ class ElevenLabsConversationalAI {
     
     async stopRecording() {
         if (this.mediaRecorder && this.isRecording) {
-            console.log('🛑 Stopping voice recording...');
-            
             this.mediaRecorder.stop();
             this.isRecording = false;
             
             // Stop all media tracks to release microphone
             if (this.mediaStream) {
                 this.mediaStream.getTracks().forEach(track => {
-                    console.log('🎤 Stopping media track:', track.kind);
                     track.stop();
                 });
                 this.mediaStream = null;
             }
-            
-            console.log('✅ Voice recording stopped and microphone released');
         }
     }
     
     async processAudioRecording() {
-        console.log('🔊 Processing audio recording...');
+        // Update status to show processing
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Processing question...';
+        }
         
         try {
             // Create audio blob with the recorded format
             const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
-            console.log('📁 Audio blob created:', audioBlob);
             
             // Create an actual audio file from the blob
             const audioFile = await this.createAudioFile(audioBlob);
-            console.log('📄 Audio file created:', audioFile);
-            
-            console.log('📤 Audio file ready for ElevenLabs API:', audioFile);
             
             if (this.elevenLabsApiKey) {
                 // Send to real ElevenLabs API
@@ -409,20 +369,11 @@ class ElevenLabsConversationalAI {
     
     async createAudioFile(audioBlob) {
         try {
-            console.log('🔧 Creating audio file from blob...');
-            
             // Create a File object from the blob with correct extension
             const extension = this.getFileExtension(this.mediaRecorder.mimeType);
             const audioFile = new File([audioBlob], `recording.${extension}`, {
                 type: this.mediaRecorder.mimeType,
                 lastModified: Date.now()
-            });
-            
-            console.log('✅ Audio file created:', {
-                name: audioFile.name,
-                size: audioFile.size,
-                type: audioFile.type,
-                lastModified: audioFile.lastModified
             });
             
             return audioFile;
@@ -442,19 +393,14 @@ class ElevenLabsConversationalAI {
     
     async sendToElevenLabs(audioFile) {
         try {
-            console.log('🚀 Sending audio file to ElevenLabs API...');
+
             
-            console.log('📡 Sending request to ElevenLabs...');
+
             
             // Create FormData for multipart/form-data request
             const formData = new FormData();
             formData.append('file', audioFile);
             formData.append('model_id', 'scribe_v1');
-            
-            console.log('🔍 FormData contents:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`  ${key}:`, value);
-            }
             
             // Make the API call to ElevenLabs
             const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
@@ -465,40 +411,32 @@ class ElevenLabsConversationalAI {
                 body: formData
             });
             
-            console.log('📡 Response status:', response.status);
-            console.log('📡 Response headers:', response.headers);
-            
             if (!response.ok) {
                 let errorMessage = `ElevenLabs API error: ${response.status} ${response.statusText}`;
                 
                 try {
                     const errorData = await response.text();
-                    console.log('❌ Error response body:', errorData);
                     errorMessage += ` - ${errorData}`;
                 } catch (e) {
-                    console.log('❌ Could not read error response body');
+                    // Could not read error response body
                 }
                 
                 throw new Error(errorMessage);
             }
             
             const result = await response.json();
-            console.log('✅ ElevenLabs API response:', result);
             
             // Handle the transcription and generate response
             if (result.text) {
                 const userMessage = result.text;
-                console.log('👤 User said:', userMessage);
                 
                 // Now generate AI response using ElevenLabs text-to-speech
                 await this.generateAIResponse(userMessage);
             } else if (result.transcription) {
                 // Alternative response format
                 const userMessage = result.transcription;
-                console.log('👤 User said:', userMessage);
                 await this.generateAIResponse(userMessage);
             } else {
-                console.log('🔍 Full API response:', result);
                 throw new Error('No transcription text received from ElevenLabs API');
             }
             
@@ -517,30 +455,13 @@ class ElevenLabsConversationalAI {
     
     async generateAIResponse(userMessage) {
         try {
-            console.log('🤖 Generating AI response using RAG system for:', userMessage);
-            
-            // Trigger sphere responding animation
+            // Trigger sphere speaking animation
             if (window.sphereAnimationController) {
-                window.sphereAnimationController.setResponding();
-            }
-            
-            // Update talk button to responding state
-            const talkButton = document.getElementById('talk-button');
-            if (talkButton) {
-                talkButton.classList.remove('thinking');
-                talkButton.classList.add('responding');
-                talkButton.querySelector('.button-text').textContent = 'Generating...';
-            }
-            
-            // Update status indicator to show generating response
-            const statusText = document.querySelector('.status-text');
-            if (statusText) {
-                statusText.textContent = 'RAG Thinking...';
+                window.sphereAnimationController.setSpeaking();
             }
             
             // Send question to RAG backend
             const ragResponse = await this.askRAG(userMessage);
-            console.log('🤖 RAG Response received:', ragResponse);
             
             // Convert AI response to speech using ElevenLabs TTS
             await this.textToSpeech(ragResponse);
@@ -553,15 +474,13 @@ class ElevenLabsConversationalAI {
     
     async checkRAGHealth() {
         try {
-            console.log('🏥 Checking RAG backend health...');
             const response = await fetch(`${this.ragBackendUrl}/health`);
             
             if (response.ok) {
                 const health = await response.json();
-                console.log('✅ RAG backend healthy:', health);
                 
                 if (health.openai_configured) {
-                    console.log('✅ OpenAI configured for RAG');
+                    // OpenAI configured for RAG
                 } else {
                     console.warn('⚠️ OpenAI not configured for RAG');
                 }
@@ -575,13 +494,10 @@ class ElevenLabsConversationalAI {
     
     async askRAG(question) {
         try {
-            console.log('🔍 Asking RAG system:', question);
-            
-            // Update label to show RAG processing
-            const label = document.querySelector('.sphere-label');
-            if (label) {
-                label.textContent = 'Searching Knowledge...';
-                label.style.color = '#2563eb'; // Royal blue
+            // Update status text to show RAG processing
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Searching knowledge...';
             }
             
             const response = await fetch(`${this.ragBackendUrl}/ask`, {
@@ -625,11 +541,11 @@ class ElevenLabsConversationalAI {
                                 // Stream token received
                                 fullResponse += data.token;
                                 tokenCount++;
-                                console.log('📝 Token received:', data.token, 'Count:', tokenCount);
+                    
                                 
                                 // Start streaming TTS as soon as we have 5 tokens
                                 if (tokenCount >= 5 && !ttsStarted) {
-                                    console.log('🎤 Starting streaming TTS with first 5 tokens...');
+                        
                                     ttsStarted = true;
                                     
                                     try {
@@ -640,11 +556,10 @@ class ElevenLabsConversationalAI {
                                         // Send initial text
                                         await streamingTTS.sendText(fullResponse);
                                         
-                                        // Update label to show TTS is starting
-                                        const label = document.querySelector('.sphere-label');
-                                        if (label) {
-                                            label.textContent = 'Speaking...';
-                                            label.style.color = '#0ea5e9'; // Sky blue
+                                        // Update status text to show TTS is starting
+                                        const statusText = document.querySelector('.status-text');
+                                        if (statusText) {
+                                            statusText.textContent = 'Speaking...';
                                         }
                                     } catch (error) {
                                         console.error('❌ Streaming TTS failed, falling back to regular TTS:', error);
@@ -663,21 +578,19 @@ class ElevenLabsConversationalAI {
                                     }
                                 }
                                 
-                                // Keep label showing "RAG Thinking..." during streaming
-                                const label = document.querySelector('.sphere-label');
-                                if (label && !ttsStarted) {
-                                    label.textContent = 'RAG Thinking...';
-                                    label.style.color = '#0ea5e9'; // Sky blue
+                                // Keep status text showing "RAG Thinking..." during streaming
+                                const statusText = document.querySelector('.status-text');
+                                if (statusText && !ttsStarted) {
+                                    statusText.textContent = 'RAG thinking...';
                                 }
                             } else if (data.text) {
                                 // Final response received
                                 fullResponse = data.text;
                                 isComplete = true;
-                                console.log('✅ Final RAG response:', fullResponse);
+                    
                                 
                                 // If TTS hasn't started yet, start it now with the full response
                                 if (!ttsStarted) {
-                                    console.log('🎤 Starting TTS with complete response...');
                                     this.textToSpeech(fullResponse);
                                 } else if (streamingTTS) {
                                     // Close streaming TTS
@@ -685,7 +598,7 @@ class ElevenLabsConversationalAI {
                                 }
                             }
                         } catch (e) {
-                            console.log('📝 Raw SSE data:', line);
+                            // Raw SSE data parsing error
                         }
                     }
                 }
@@ -701,11 +614,14 @@ class ElevenLabsConversationalAI {
     
     async textToSpeech(text) {
         try {
-            console.log('🎤 Converting text to speech:', text);
+            // Update status to show TTS starting
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Creating speech...';
+            }
             
             // Add to audio queue
             this.audioQueue.push(text);
-            console.log('📋 Added to audio queue. Queue length:', this.audioQueue.length);
             
             // If not currently playing, start processing the queue
             if (!this.isPlaying) {
@@ -734,15 +650,12 @@ class ElevenLabsConversationalAI {
         
         this.isPlaying = true;
         const text = this.audioQueue.shift();
-        console.log('🎤 Processing audio queue. Text:', text);
         
-                    // Update label to show TTS processing
-            const label = document.querySelector('.sphere-label');
-            if (label) {
-                label.textContent = 'Creating Speech...';
-                label.style.color = '#059669'; // Emerald
-                label.style.textShadow = '0 0 10px rgba(5, 150, 105, 0.6)';
-            }
+        // Update status text to show TTS processing
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Creating speech...';
+        }
         
         try {
             // Try streaming TTS first for better quality
@@ -750,7 +663,7 @@ class ElevenLabsConversationalAI {
                 await this.streamingTTS(text);
                 return;
             } catch (streamError) {
-                console.log('⚠️ Streaming TTS failed, falling back to regular TTS:', streamError.message);
+                // Streaming TTS failed, falling back to regular TTS
             }
             
             // Fallback to regular TTS
@@ -786,7 +699,6 @@ class ElevenLabsConversationalAI {
             }
             
             const audioBlob = await response.blob();
-            console.log('✅ TTS audio received:', audioBlob);
             
             // Play the audio response
             await this.playAudioResponse(audioBlob, text);
@@ -808,13 +720,10 @@ class ElevenLabsConversationalAI {
     
     async streamingTTS(text) {
         try {
-            console.log('🎤 Using streaming TTS for better quality...');
-            
-            // Update label
-            const label = document.querySelector('.sphere-label');
-            if (label) {
-                label.textContent = 'Streaming Speech...';
-                label.style.color = '#0ea5e9';
+            // Update status text
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Answering...';
             }
             
             // Use streaming TTS endpoint
@@ -850,7 +759,6 @@ class ElevenLabsConversationalAI {
             }
             
             const audioBlob = await response.blob();
-            console.log('✅ Streaming TTS audio received:', audioBlob);
             
             // Play the audio response
             await this.playAudioResponse(audioBlob, text);
@@ -862,8 +770,6 @@ class ElevenLabsConversationalAI {
     
     async playAudioResponse(audioBlob, text) {
         try {
-            console.log('🔊 Playing audio response...');
-            
             // Update UI to responding state first
             this.updateUIToResponding();
             
@@ -887,7 +793,6 @@ class ElevenLabsConversationalAI {
             
             // Approach 4: Only as last resort, show the tap prompt
             if (!audioPlayed) {
-                console.log('📱 All seamless methods failed, showing mobile prompt as last resort');
                 this.createMobileAudioPrompt(audioBlob, text);
             }
             
@@ -898,12 +803,11 @@ class ElevenLabsConversationalAI {
     }
     
     updateUIToResponding() {
-        // Update talk button to responding state
+        // Update talk button to responding state (no text change)
         const talkButton = document.getElementById('talk-button');
         if (talkButton) {
             talkButton.classList.remove('thinking');
             talkButton.classList.add('responding');
-            talkButton.querySelector('.button-text').textContent = 'Answering...';
         }
         
         // Update status indicator to show playing
@@ -915,7 +819,7 @@ class ElevenLabsConversationalAI {
     
     async tryDirectAudioPlayback(audioBlob, text) {
         try {
-            console.log('🎯 Attempting direct audio playback...');
+
             
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
@@ -928,18 +832,18 @@ class ElevenLabsConversationalAI {
             this.setupAudioEventHandlers(audio, audioUrl, text);
             
             await audio.play();
-            console.log('✅ Direct audio playback successful');
+
             return true;
             
         } catch (error) {
-            console.log('⚠️ Direct audio playback failed:', error.name);
+
             return false;
         }
     }
     
     async tryAudioWithUnlock(audioBlob, text) {
         try {
-            console.log('🔓 Attempting audio with unlock...');
+
             
             // Force unlock attempt
             if (this.audioContext && this.audioContext.state === 'suspended') {
@@ -956,20 +860,16 @@ class ElevenLabsConversationalAI {
             this.setupAudioEventHandlers(audio, audioUrl, text);
             
             await audio.play();
-            console.log('✅ Audio with unlock successful');
             this.audioUnlocked = true;
             return true;
             
         } catch (error) {
-            console.log('⚠️ Audio with unlock failed:', error.name);
             return false;
         }
     }
     
     async tryUnlockedAudioPlayback(audioBlob, text) {
         try {
-            console.log('🎵 Using pre-unlocked audio element...');
-            
             // Reuse the unlocked audio element with new source
             const audioUrl = URL.createObjectURL(audioBlob);
             this.unlockedAudio.src = audioUrl;
@@ -979,18 +879,15 @@ class ElevenLabsConversationalAI {
             this.setupAudioEventHandlers(this.unlockedAudio, audioUrl, text);
             
             await this.unlockedAudio.play();
-            console.log('✅ Pre-unlocked audio playback successful');
             return true;
             
         } catch (error) {
-            console.log('⚠️ Pre-unlocked audio failed:', error.name);
             return false;
         }
     }
     
     setupAudioEventHandlers(audio, audioUrl, text) {
         audio.onended = () => {
-            console.log('✅ Audio response finished playing');
             URL.revokeObjectURL(audioUrl);
             this.onAudioComplete();
         };
@@ -1011,24 +908,31 @@ class ElevenLabsConversationalAI {
         // Reset talk button to ready state
         const talkButton = document.getElementById('talk-button');
         if (talkButton) {
-            talkButton.classList.remove('listening', 'thinking', 'responding');
-            talkButton.classList.add('ready');
+            talkButton.classList.remove('listening', 'processing');
+            talkButton.disabled = false;
             talkButton.querySelector('i').className = 'fas fa-microphone';
             talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
+            
+            if (window.isPlayingWelcome) {
+                // Reset welcome flag
+                window.isPlayingWelcome = false;
+            }
         }
         
-        // Reset status indicator
-        const statusText = document.querySelector('.status-text');
-        if (statusText) {
-            statusText.textContent = 'Ready to chat';
-        }
+        // Dispatch global event for main.js to catch
+        const isWelcome = window.isPlayingWelcome || false;
+        document.dispatchEvent(new CustomEvent('audioCompleted', {
+            detail: {
+                isWelcome: isWelcome,
+                timestamp: Date.now()
+            }
+        }));
         
         // Mark as not playing and continue with queue
         this.isPlaying = false;
         
         // Process next item in queue if any
         if (this.audioQueue.length > 0) {
-            console.log('📋 Processing next item in audio queue...');
             this.processAudioQueue();
         } else {
             // No more items, reset to ready state
@@ -1037,15 +941,10 @@ class ElevenLabsConversationalAI {
     }
     
     createMobileAudioPrompt(audioBlob, text) {
-        console.log('📱 Creating minimally intrusive mobile audio prompt...');
-        
-        // Update the sphere label to show tap instruction
-        const label = document.querySelector('.sphere-label');
-        if (label) {
-            label.textContent = 'Tap sphere for audio';
-            label.style.color = '#10b981'; // Green
-            label.style.textShadow = '0 0 10px rgba(16, 185, 129, 0.6)';
-            label.style.cursor = 'pointer';
+        // Update the status text to show tap instruction
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Tap sphere for audio';
         }
         
         // Create audio element
@@ -1060,7 +959,6 @@ class ElevenLabsConversationalAI {
         const playAudio = async () => {
             try {
                 await audio.play();
-                console.log('✅ Mobile audio prompt via sphere successful');
                 
                 // Set up normal audio event handlers
                 this.setupAudioEventHandlers(audio, audioUrl, text);
@@ -1070,12 +968,9 @@ class ElevenLabsConversationalAI {
                     sphereContainer.removeEventListener('click', playAudio);
                 }
                 
-                // Reset label
-                if (label) {
-                    label.textContent = 'AI Avatar';
-                    label.style.color = '#f59e0b';
-                    label.style.textShadow = '';
-                    label.style.cursor = 'default';
+                // Reset status text
+                if (statusText) {
+                    statusText.textContent = 'Ready to chat';
                 }
                 
             } catch (error) {
@@ -1087,11 +982,8 @@ class ElevenLabsConversationalAI {
                 if (sphereContainer) {
                     sphereContainer.removeEventListener('click', playAudio);
                 }
-                if (label) {
-                    label.textContent = 'AI Avatar';
-                    label.style.color = '#f59e0b';
-                    label.style.textShadow = '';
-                    label.style.cursor = 'default';
+                if (statusText) {
+                    statusText.textContent = 'Ready to chat';
                 }
             }
         };
@@ -1105,21 +997,15 @@ class ElevenLabsConversationalAI {
             if (sphereContainer) {
                 sphereContainer.removeEventListener('click', playAudio);
             }
-            if (label && label.textContent === 'Tap sphere for audio') {
-                console.log('📱 Audio prompt timeout, showing text response');
+            if (statusText && statusText.textContent === 'Tap sphere for audio') {
                 this.handleAIResponse(text);
-                label.textContent = 'AI Avatar';
-                label.style.color = '#f59e0b';
-                label.style.textShadow = '';
-                label.style.cursor = 'default';
+                statusText.textContent = 'Ready to chat';
             }
             URL.revokeObjectURL(audioUrl);
         }, 8000);
     }
     
     handleAIResponse(responseText) {
-        console.log('🤖 AI Response:', responseText);
-        
         // Don't display text on sphere - just log it
         // The sphere will show status updates only
     }
@@ -1140,10 +1026,6 @@ class ElevenLabsConversationalAI {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing ElevenLabs AI...');
-    
     // Create global instance
     window.elevenLabsAI = new ElevenLabsConversationalAI();
-    
-    console.log('ElevenLabs AI ready!');
 });

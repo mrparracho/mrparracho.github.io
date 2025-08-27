@@ -236,6 +236,8 @@ p {
     transition: var(--transition);
 }
 
+
+
 /* Hero Section */
 .hero {
     min-height: 100vh;
@@ -659,44 +661,7 @@ p {
     mix-blend-mode: soft-light;
 }
 
-.sphere-label {
-    margin-top: 20px;
-    color: #3B82F6;
-    font-size: 1.1rem;
-    font-weight: 500;
-    text-align: center;
-    opacity: 0.9;
-    transition: all 0.3s ease;
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-    cursor: pointer;
-}
 
-.sphere-label:hover {
-    color: rgba(0, 191, 255, 0.9);
-    transform: scale(1.05);
-    text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
-}
-
-.sphere-label.pulse {
-    animation: labelPulse 2s ease-in-out;
-}
-
-@keyframes labelPulse {
-    0%, 100% {
-        transform: scale(1);
-        color: #3B82F6;
-    }
-    50% {
-        transform: scale(1.1);
-        color: rgba(0, 191, 255, 0.9);
-    }
-}
-
-.ai-sphere:hover + .sphere-label {
-    opacity: 1;
-    color: rgba(0, 191, 255, 0.9);
-    text-shadow: 0 0 15px rgba(0, 191, 255, 0.6);
-}
 
 @keyframes rotate3D {
     from { 
@@ -1773,6 +1738,68 @@ section {
     border-radius: 50%;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    filter: drop-shadow(0 30px 80px rgba(0,168,255,0.6));
+    position: relative;
+}
+
+/* Enhanced animated glow halo for AI avatar sphere */
+#threejs-container::before {
+    content: "";
+    position: absolute;
+    inset: -15%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(173, 216, 230, 0.35) 15%,
+        rgba(135, 206, 250, 0.3) 30%,
+        rgba(100, 181, 246, 0.25) 45%,
+        rgba(64, 181, 246, 0.2) 60%,
+        rgba(33, 150, 243, 0.15) 75%,
+        rgba(25, 118, 210, 0.1) 85%,
+        rgba(0,0,0,0) 95%);
+    filter: blur(60px);
+    pointer-events: none;
+    animation: ai-glow-pulse 6s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+#threejs-container::after {
+    content: "";
+    position: absolute;
+    inset: -8%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 25%,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(144, 202, 249, 0.2) 25%,
+        rgba(100, 181, 246, 0.15) 50%,
+        rgba(0, 168, 255, 0.1) 75%,
+        rgba(0,0,0,0) 90%);
+    filter: blur(30px);
+    pointer-events: none;
+    animation: ai-inner-glow 4s ease-in-out infinite alternate-reverse;
+    z-index: -1;
+}
+
+@keyframes ai-glow-pulse {
+    from { 
+        opacity: 0.7; 
+        transform: scale(1) rotate(0deg); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1.15) rotate(180deg); 
+    }
+}
+
+@keyframes ai-inner-glow {
+    from { 
+        opacity: 0.8; 
+        transform: scale(1.05) rotate(0deg); 
+    }
+    to { 
+        opacity: 0.4; 
+        transform: scale(1.2) rotate(-90deg); 
+    }
 }
 
 .ai-status-indicator {
@@ -1888,16 +1915,21 @@ section {
     animation: listeningPulse 1.5s ease-in-out infinite;
 }
 
-.voice-button.thinking .button-icon {
+.voice-button.processing .button-icon {
     background: linear-gradient(135deg, var(--primary-dark), var(--accent));
     box-shadow: 0 8px 20px rgba(0, 151, 230, 0.5);
-    animation: thinkingSpin 1s linear infinite;
 }
 
-.voice-button.responding .button-icon {
-    background: linear-gradient(135deg, #10b981, #059669);
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
-    animation: respondingPulse 0.8s ease-in-out infinite;
+/* Disabled state styling */
+.voice-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.voice-button:disabled:hover {
+    transform: none;
+    box-shadow: 0 8px 20px rgba(0, 168, 255, 0.4);
 }
 
 @keyframes listeningPulse {
@@ -1911,25 +1943,9 @@ section {
     }
 }
 
-@keyframes thinkingSpin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
 
-@keyframes respondingPulse {
-    0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.7);
-    }
-}
+
+
 
 .button-text {
     font-size: 1rem;

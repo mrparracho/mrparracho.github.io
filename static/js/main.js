@@ -1,39 +1,21 @@
 // Main JavaScript for Portfolio Website
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing portfolio website...');
-    
-
-    
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize all functionality
     initLoadingScreen();
     initNavigation();
     initTypingEffect();
-    
-    // Test projects loading with a simple approach
-    setTimeout(() => {
-        console.log('Testing projects loading...');
-        loadProjects();
-    }, 1000);
-    
-    // Also try loading immediately
-    console.log('Loading projects immediately...');
     loadProjects();
-    
     initContactForm();
     initParticles();
-    initAISphere();
-    initSkillBars(); // Initialize skill progress bars
-    initTalkButton(); // Add talk button functionality
-    
-    console.log('Portfolio website initialized successfully');
+    await initAISphere();
+    initSkillBars();
+    initTalkButton();
 });
 
 // Loading Screen
 function initLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
-    
-    // Hide loading screen after 2 seconds
     setTimeout(() => {
         loadingScreen.style.opacity = '0';
         setTimeout(() => {
@@ -48,13 +30,11 @@ function initNavigation() {
     const navMenu = document.querySelector('.nav-menu');
     const navLinks = document.querySelectorAll('.nav-link');
     
-    // Mobile menu toggle
     hamburger.addEventListener('click', () => {
         navMenu.classList.toggle('active');
         hamburger.classList.toggle('active');
     });
     
-    // Close mobile menu when clicking on a link
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             navMenu.classList.remove('active');
@@ -62,7 +42,6 @@ function initNavigation() {
         });
     });
     
-    // Smooth scrolling for navigation links
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -70,7 +49,7 @@ function initNavigation() {
             const targetSection = document.querySelector(targetId);
             
             if (targetSection) {
-                const offsetTop = targetSection.offsetTop - 70; // Account for fixed navbar
+                const offsetTop = targetSection.offsetTop - 70;
                 window.scrollTo({
                     top: offsetTop,
                     behavior: 'smooth'
@@ -78,14 +57,12 @@ function initNavigation() {
             }
         });
     });
-    
-
 }
 
 // Typing Effect
 function initTypingEffect() {
     const typingText = document.getElementById('typing-text');
-    const words = [ 'Tech Lead', 'Data & AI Engineer', 'AI Solutions Architect', 'Crypto Enthusiast', 'Python Developer'];
+    const words = ['Tech Lead', 'Data & AI Engineer', 'AI Solutions Architect', 'Crypto Enthusiast', 'Python Developer'];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
@@ -102,18 +79,15 @@ function initTypingEffect() {
         }
         
         let typeSpeed = 150;
-        
-        if (isDeleting) {
-            typeSpeed /= 2;
-        }
+        if (isDeleting) typeSpeed /= 2;
         
         if (!isDeleting && charIndex === currentWord.length) {
-            typeSpeed = 2000; // Pause at end
+            typeSpeed = 2000;
             isDeleting = true;
         } else if (isDeleting && charIndex === 0) {
             isDeleting = false;
             wordIndex = (wordIndex + 1) % words.length;
-            typeSpeed = 500; // Pause before next word
+            typeSpeed = 500;
         }
         
         setTimeout(type, typeSpeed);
@@ -122,73 +96,37 @@ function initTypingEffect() {
     setTimeout(type, 1000);
 }
 
-
-
-
-
 // Load Projects
 async function loadProjects() {
     try {
-        console.log('Loading projects...');
-        
-        // Check if projects-grid element exists
         const projectsGrid = document.getElementById('projects-grid');
-        if (!projectsGrid) {
-            throw new Error('Projects grid element not found');
-        }
-        console.log('Projects grid found:', projectsGrid);
+        if (!projectsGrid) return;
         
-        // Fetch projects.json
-        console.log('Fetching projects.json...');
         const response = await fetch('projects.json?v=' + Date.now());
-        
-        // Clear any existing projects first
-        projectsGrid.innerHTML = '';
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const data = await response.json();
-        console.log('Projects data loaded:', data);
-        console.log('Number of projects:', data.projects.length);
-        
-        // Clear existing content (including the "Coming Soon" card)
-        console.log('Clearing existing content...');
         projectsGrid.innerHTML = '';
         
-        // Create and append project cards
         data.projects.forEach((project, index) => {
-            console.log(`Creating project card ${index + 1}:`, project.title);
             const projectCard = createProjectCard(project);
             projectsGrid.appendChild(projectCard);
-            console.log(`Project card ${index + 1} added to DOM`);
         });
         
-        // Handle project layout classes
         if (data.projects.length === 1) {
             projectsGrid.classList.add('single-project');
         } else {
             projectsGrid.classList.remove('single-project');
         }
         
-        console.log('Projects loaded successfully');
-        
     } catch (error) {
-        console.error('=== ERROR LOADING PROJECTS ===');
-        console.error('Error details:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        
-        // Fallback: show error message
+        console.error('Error loading projects:', error);
         const projectsGrid = document.getElementById('projects-grid');
         if (projectsGrid) {
             projectsGrid.innerHTML = `
                 <div class="error-message" style="color: red; padding: 20px; text-align: center;">
                     <h3>Error Loading Projects</h3>
                     <p>${error.message}</p>
-                    <p>Please check the console for more details.</p>
                 </div>
             `;
         }
@@ -197,7 +135,6 @@ async function loadProjects() {
 
 // Create Project Card
 function createProjectCard(project) {
-    console.log('Creating project card for:', project.title, 'with image:', project.imageUrl);
     const card = document.createElement('div');
     card.className = 'project-card';
     
@@ -211,15 +148,12 @@ function createProjectCard(project) {
     card.innerHTML = `
         <div class="project-image">
             <img src="${project.imageUrl}" alt="${project.title}" 
-                 onload="console.log('Image loaded successfully:', '${project.title}')"
-                 onerror="console.error('Image failed to load:', '${project.title}', 'URL:', '${project.imageUrl}'); this.src='static/images/projects/placeholder.svg'">
+                 onerror="this.src='static/images/projects/placeholder.svg'">
         </div>
         <div class="project-content">
             <h3 class="project-title">${project.title}</h3>
             <p class="project-description">${project.description}</p>
-            <div class="project-skills">
-                ${skillsHTML}
-            </div>
+            <div class="project-skills">${skillsHTML}</div>
             <div class="project-links">
                 <a href="${project.repoUrl}" class="project-link primary" target="_blank">
                     <i class="fab fa-github"></i>
@@ -235,17 +169,14 @@ function createProjectCard(project) {
 // Contact Form
 function initContactForm() {
     const contactForm = document.getElementById('contact-form');
-    
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = new FormData(contactForm);
             const name = formData.get('name');
             const email = formData.get('email');
             const message = formData.get('message');
             
-            // Simple validation
             if (!name || !email || !message) {
                 showNotification('Please fill in all fields.', 'error');
                 return;
@@ -256,7 +187,6 @@ function initContactForm() {
                 return;
             }
             
-            // Simulate form submission (replace with actual form handling)
             showNotification('Thank you for your message! I\'ll get back to you soon.', 'success');
             contactForm.reset();
         });
@@ -271,7 +201,6 @@ function isValidEmail(email) {
 
 // Show notification
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
@@ -281,7 +210,6 @@ function showNotification(message, type = 'info') {
         </div>
     `;
     
-    // Add styles
     notification.style.cssText = `
         position: fixed;
         top: 20px;
@@ -297,15 +225,12 @@ function showNotification(message, type = 'info') {
         max-width: 400px;
     `;
     
-    // Add to page
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Close button functionality
     const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => {
         notification.style.transform = 'translateX(100%)';
@@ -314,7 +239,6 @@ function showNotification(message, type = 'info') {
         }, 300);
     });
     
-    // Auto-remove after 5 seconds
     setTimeout(() => {
         if (document.body.contains(notification)) {
             notification.style.transform = 'translateX(100%)';
@@ -330,962 +254,391 @@ function showNotification(message, type = 'info') {
 // Particles Background
 function initParticles() {
     if (typeof particlesJS !== 'undefined') {
-        // Initialize particles for hero section
         particlesJS('particles-js', {
             particles: {
-                number: {
-                    value: 80,
-                    density: {
-                        enable: true,
-                        value_area: 800
-                    }
-                },
-                color: {
-                    value: '#00a8ff'
-                },
-                shape: {
-                    type: 'circle',
-                    stroke: {
-                        width: 0,
-                        color: '#000000'
-                    }
-                },
-                opacity: {
-                    value: 0.5,
-                    random: false,
-                    anim: {
-                        enable: false,
-                        speed: 1,
-                        opacity_min: 0.1,
-                        sync: false
-                    }
-                },
-                size: {
-                    value: 3,
-                    random: true,
-                    anim: {
-                        enable: false,
-                        speed: 40,
-                        size_min: 0.1,
-                        sync: false
-                    }
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 150,
-                    color: '#00a8ff',
-                    opacity: 0.4,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 6,
-                    direction: 'none',
-                    random: false,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false,
-                    attract: {
-                        enable: false,
-                        rotateX: 600,
-                        rotateY: 1200
-                    }
-                }
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: '#00a8ff' },
+                shape: { type: 'circle', stroke: { width: 0, color: '#000000' } },
+                opacity: { value: 0.5, random: false, anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false } },
+                size: { value: 3, random: true, anim: { enable: false, speed: 40, size_min: 0.1, sync: false } },
+                line_linked: { enable: true, distance: 150, color: '#00a8ff', opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 6, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
             },
             interactivity: {
                 detect_on: 'canvas',
                 events: {
-                    onhover: {
-                        enable: true,
-                        mode: 'repulse'
-                    },
-                    onclick: {
-                        enable: true,
-                        mode: 'push'
-                    },
+                    onhover: { enable: true, mode: 'repulse' },
+                    onclick: { enable: true, mode: 'push' },
                     resize: true
                 },
                 modes: {
-                    grab: {
-                        distance: 400,
-                        line_linked: {
-                            opacity: 1
-                        }
-                    },
-                    bubble: {
-                        distance: 400,
-                        size: 40,
-                        duration: 2,
-                        opacity: 8,
-                        speed: 3
-                    },
-                    repulse: {
-                        distance: 200,
-                        duration: 0.4
-                    },
-                    push: {
-                        particles_nb: 4
-                    },
-                    remove: {
-                        particles_nb: 2
-                    }
+                    grab: { distance: 400, line_linked: { opacity: 1 } },
+                    bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
+                    repulse: { distance: 200, duration: 0.4 },
+                    push: { particles_nb: 4 },
+                    remove: { particles_nb: 2 }
                 }
             },
             retina_detect: true
         });
         
-        // Common particle configuration for sections
-        const sectionParticleConfig = {
+        // Initialize other particle sections
+        const sectionConfig = {
             particles: {
-                number: {
-                    value: 70,
-                    density: {
-                        enable: true,
-                        value_area: 800
-                    }
-                },
-                color: {
-                    value: '#00a8ff'
-                },
-                shape: {
-                    type: 'circle',
-                    stroke: {
-                        width: 0,
-                        color: '#000000'
-                    }
-                },
-                opacity: {
-                    value: 0.4,
-                    random: false,
-                    anim: {
-                        enable: false,
-                        speed: 1,
-                        opacity_min: 0.1,
-                        sync: false
-                    }
-                },
-                size: {
-                    value: 3,
-                    random: true,
-                    anim: {
-                        enable: false,
-                        speed: 40,
-                        size_min: 0.1,
-                        sync: false
-                    }
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 140,
-                    color: '#00a8ff',
-                    opacity: 0.3,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 1,
-                    direction: 'none',
-                    random: false,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false,
-                    attract: {
-                        enable: false,
-                        rotateX: 600,
-                        rotateY: 1200
-                    }
-                }
+                number: { value: 70, density: { enable: true, value_area: 800 } },
+                color: { value: '#00a8ff' },
+                shape: { type: 'circle', stroke: { width: 0, color: '#000000' } },
+                opacity: { value: 0.4, random: false, anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false } },
+                size: { value: 3, random: true, anim: { enable: false, speed: 40, size_min: 0.1, sync: false } },
+                line_linked: { enable: true, distance: 140, color: '#00a8ff', opacity: 0.3, width: 1 },
+                move: { enable: true, speed: 1, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
             },
             interactivity: {
                 detect_on: 'canvas',
                 events: {
-                    onhover: {
-                        enable: true,
-                        mode: 'grab'
-                    },
-                    onclick: {
-                        enable: true,
-                        mode: 'push'
-                    },
+                    onhover: { enable: true, mode: 'grab' },
+                    onclick: { enable: true, mode: 'push' },
                     resize: true
                 },
                 modes: {
-                    grab: {
-                        distance: 140,
-                        line_linked: {
-                            opacity: 0.5
-                        }
-                    },
-                    push: {
-                        particles_nb: 3
-                    }
+                    grab: { distance: 140, line_linked: { opacity: 0.5 } },
+                    push: { particles_nb: 3 }
                 }
             },
             retina_detect: true
         };
 
-        // Initialize particles for AI Avatar section (more prominent)
-        particlesJS('ai-particles', {
-            particles: {
-                number: {
-                    value: 60,
-                    density: {
-                        enable: true,
-                        value_area: 800
-                    }
-                },
-                color: {
-                    value: '#00a8ff'
-                },
-                shape: {
-                    type: 'circle',
-                    stroke: {
-                        width: 0,
-                        color: '#000000'
-                    }
-                },
-                opacity: {
-                    value: 0.3,
-                    random: false,
-                    anim: {
-                        enable: false,
-                        speed: 1,
-                        opacity_min: 0.1,
-                        sync: false
-                    }
-                },
-                size: {
-                    value: 2,
-                    random: true,
-                    anim: {
-                        enable: false,
-                        speed: 40,
-                        size_min: 0.1,
-                        sync: false
-                    }
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 120,
-                    color: '#00a8ff',
-                    opacity: 0.2,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 1,
-                    direction: 'none',
-                    random: false,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false,
-                    attract: {
-                        enable: false,
-                        rotateX: 600,
-                        rotateY: 1200
-                    }
-                }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: {
-                    onhover: {
-                        enable: true,
-                        mode: 'grab'
-                    },
-                    onclick: {
-                        enable: true,
-                        mode: 'push'
-                    },
-                    resize: true
-                },
-                modes: {
-                    grab: {
-                        distance: 140,
-                        line_linked: {
-                            opacity: 0.5
-                        }
-                    },
-                    push: {
-                        particles_nb: 2
-                    }
-                }
-            },
-            retina_detect: true
-        });
-
-        // Initialize particles for Projects and Skills sections (forced identical configuration)
-        const identicalConfig = {
-            particles: {
-                number: {
-                    value: 70,
-                    density: {
-                        enable: true,
-                        value_area: 800
-                    }
-                },
-                color: {
-                    value: '#00a8ff'
-                },
-                shape: {
-                    type: 'circle',
-                    stroke: {
-                        width: 0,
-                        color: '#000000'
-                    }
-                },
-                opacity: {
-                    value: 0.4,
-                    random: false,
-                    anim: {
-                        enable: false,
-                        speed: 1,
-                        opacity_min: 0.1,
-                        sync: false
-                    }
-                },
-                size: {
-                    value: 3,
-                    random: true,
-                    anim: {
-                        enable: false,
-                        speed: 40,
-                        size_min: 0.1,
-                        sync: false
-                    }
-                },
-                line_linked: {
-                    enable: true,
-                    distance: 140,
-                    color: '#00a8ff',
-                    opacity: 0.3,
-                    width: 1
-                },
-                move: {
-                    enable: true,
-                    speed: 1,
-                    direction: 'none',
-                    random: false,
-                    straight: false,
-                    out_mode: 'out',
-                    bounce: false,
-                    attract: {
-                        enable: false,
-                        rotateX: 600,
-                        rotateY: 1200
-                    }
-                }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: {
-                    onhover: {
-                        enable: true,
-                        mode: 'grab'
-                    },
-                    onclick: {
-                        enable: true,
-                        mode: 'push'
-                    },
-                    resize: true
-                },
-                modes: {
-                    grab: {
-                        distance: 140,
-                        line_linked: {
-                            opacity: 0.5
-                        }
-                    },
-                    push: {
-                        particles_nb: 3
-                    }
-                }
-            },
-            retina_detect: true
-        };
-        
-        console.log('Initializing projects particles with forced identical config...');
-        particlesJS('projects-particles', identicalConfig);
-        
-        console.log('Initializing skills particles with forced identical config...');
-        particlesJS('skills-particles', identicalConfig);
-    } else {
-        console.log('Particles.js not loaded');
+        particlesJS('ai-particles', sectionConfig);
+        particlesJS('projects-particles', sectionConfig);
+        particlesJS('skills-particles', sectionConfig);
     }
 }
 
 // Skill Bars Animation
 function initSkillBars() {
     const skillBars = document.querySelectorAll('.skill-progress');
-    
-    if (skillBars.length === 0) {
-        console.log('No skill bars found');
-        return;
-    }
-    
-    console.log('Initializing skill bars...');
-    
     skillBars.forEach(bar => {
         const level = bar.getAttribute('data-level');
         if (level) {
-            // Set the CSS variable for the width
             bar.style.setProperty('--skill-level', level + '%');
-            console.log(`Set skill bar to ${level}%`);
         }
     });
-    
-    console.log('✅ Skill bars initialized');
 }
 
-
-
-
-
-// Global variables for sphere animation
-let sphereAnimationState = 'idle';
-let sphereAnimationStartTime = 0;
-let spherePulseIntensity = 0;
-let sphereThinkingRotationSpeed = 1;
-let sphereResponsePulseSpeed = 1;
-let sphereScene, sphereCamera, sphereRenderer, sphere, sphereMaterial, particles;
-
-// AI Sphere Interaction with Three.js
-function initAISphere() {
+// AI Sphere with Three.js
+async function initAISphere() {
     const container = document.getElementById('threejs-container');
-    const sphereLabel = document.querySelector('.sphere-label');
+    if (!container) return;
     
-    if (!container || !sphereLabel) return;
-    
-    // Set label color from CSS variable
-    sphereLabel.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent');
-    
-    // Three.js setup
-    if (typeof THREE === 'undefined') {
-        console.error('Three.js not loaded');
-        return;
+    try {
+        const THREE = await import('three');
+        const sphere = new TexturedSphere(container, THREE);
+        window.aiSphere = sphere;
+        
+        window.sphereAnimationController = {
+            setState: function(state) {
+                sphere.setState(state);
+            },
+            getState: function() { return sphere.state; },
+            setListening: function() { this.setState('listening'); },
+            setThinking: function() { this.setState('thinking'); },
+            setSpeaking: function() { this.setState('speaking'); },
+            setResponding: function() { this.setState('speaking'); },
+            setIdle: function() { this.setState('idle'); }
+            };
+    } catch (error) {
+        console.error('Failed to load Three.js:', error);
+    }
+}
+
+// TexturedSphere class (simplified)
+class TexturedSphere {
+    constructor(container, THREE) {
+        this.container = container;
+        this.THREE = THREE;
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.sphere = null;
+        this.material = null;
+        this.texture = null;
+        this.time = 0;
+        this.state = 'idle';
+        this.energy = 0;
+        this.isAnimating = false;
+        
+        this.init();
     }
     
-    sphereScene = new THREE.Scene();
-    sphereCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    sphereRenderer = new THREE.WebGLRenderer({ 
-        antialias: true, 
-        alpha: true,
-        powerPreference: "high-performance"
-    });
+    async init() {
+        this.setupScene();
+        await this.createRadialTexture();
+        this.createSphere();
+        this.setupLighting();
+        this.startAnimation();
+    }
     
-    sphereRenderer.setSize(container.clientWidth, container.clientHeight);
-    sphereRenderer.setPixelRatio(window.devicePixelRatio);
-    sphereRenderer.setClearColor(0x000000, 0);
-    sphereRenderer.shadowMap.enabled = true;
-    sphereRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(sphereRenderer.domElement);
+    setupScene() {
+        this.scene = new this.THREE.Scene();
+        this.camera = new this.THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+        this.camera.position.z = 4;
+        
+        this.renderer = new this.THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.setClearColor(0x000000, 0);
+        
+        this.container.appendChild(this.renderer.domElement);
+        window.addEventListener('resize', () => this.onWindowResize());
+    }
     
-    // Create cosmic sphere
-    const sphereGeometry = new THREE.SphereGeometry(2, 64, 64);
+    async createRadialTexture() {
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.1, '#e8f4fd');
+            gradient.addColorStop(0.3, '#90caf9');
+            gradient.addColorStop(0.5, '#42a5f5');
+            gradient.addColorStop(0.7, '#1e88e5');
+            gradient.addColorStop(0.9, '#1565c0');
+            gradient.addColorStop(1, '#073279');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 512);
+            
+            this.texture = new this.THREE.CanvasTexture(canvas);
+            this.texture.wrapS = this.THREE.RepeatWrapping;
+            this.texture.wrapT = this.THREE.RepeatWrapping;
+            
+            resolve(this.texture);
+        });
+    }
     
-    // Create custom shader material for the cosmic effect
-    sphereMaterial = new THREE.ShaderMaterial({
+    createSphere() {
+        const geometry = new this.THREE.SphereGeometry(2, 64, 64);
+        
+        this.material = new this.THREE.ShaderMaterial({
         uniforms: {
             time: { value: 0 },
-            resolution: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) },
-            pulseIntensity: { value: 0 },
-            stateColor: { value: new THREE.Color(0xffffff) }
+                texture1: { value: this.texture },
+                energy: { value: 0 },
+                state: { value: 0 },
+                thinkingProgress: { value: 0 },
+                resolution: { value: new this.THREE.Vector2(512, 512) }
         },
         vertexShader: `
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+                uniform float time;
+                uniform float energy;
             varying vec2 vUv;
+                varying vec3 vPosition;
+                varying vec3 vNormal;
             
             void main() {
-                vNormal = normalize(normalMatrix * normal);
-                vPosition = position;
                 vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    vPosition = position;
+                    vNormal = normal;
+                    
+                    vec3 pos = position;
+                    float breathe = sin(time * 0.5) * 0.02;
+                    float energyPulse = energy * 0.1 * sin(time * 2.0);
+                    pos += normal * (breathe + energyPulse);
+                    
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
             }
         `,
         fragmentShader: `
             uniform float time;
-            uniform vec2 resolution;
-            uniform float pulseIntensity;
-            uniform vec3 stateColor;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
+                uniform sampler2D texture1;
+                uniform float energy;
+                uniform float state;
             varying vec2 vUv;
-            
-            // Noise function
-            float noise(vec3 p) {
-                return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
-            }
-            
-            // Smooth noise
-            float smoothNoise(vec3 p) {
-                vec3 i = floor(p);
-                vec3 f = fract(p);
-                f = f * f * (3.0 - 2.0 * f);
-                
-                float a = noise(i);
-                float b = noise(i + vec3(1.0, 0.0, 0.0));
-                float c = noise(i + vec3(0.0, 1.0, 0.0));
-                float d = noise(i + vec3(1.0, 1.0, 0.0));
-                float e = noise(i + vec3(0.0, 0.0, 1.0));
-                float f1 = noise(i + vec3(1.0, 0.0, 1.0));
-                float g = noise(i + vec3(0.0, 1.0, 1.0));
-                float h = noise(i + vec3(1.0, 1.0, 1.0));
-                
-                return mix(mix(mix(a, b, f.x), mix(c, d, f.x), f.y), 
-                          mix(mix(e, f1, f.x), mix(g, h, f.x), f.y), f.z);
-            }
+                varying vec3 vPosition;
+                varying vec3 vNormal;
             
             void main() {
-                vec3 normal = normalize(vNormal);
-                vec3 viewDir = normalize(cameraPosition - vPosition);
-                
-                // Base cosmic colors
-                vec3 blue = vec3(0.2, 0.6, 1.0);
-                vec3 purple = vec3(0.6, 0.2, 1.0);
-                vec3 orange = vec3(1.0, 0.6, 0.2);
-                vec3 pink = vec3(1.0, 0.4, 0.8);
-                
-                // Create swirling cosmic energy
-                float noise1 = smoothNoise(vPosition * 2.0 + time * 0.5);
-                float noise2 = smoothNoise(vPosition * 3.0 - time * 0.3);
-                float noise3 = smoothNoise(vPosition * 1.5 + time * 0.7);
-                
-                // Mix colors based on noise and position
-                vec3 color1 = mix(blue, purple, noise1);
-                vec3 color2 = mix(orange, pink, noise2);
-                vec3 finalColor = mix(color1, color2, noise3);
-                
-                // Apply state color tint with dynamic intensity
-                float colorIntensity = 0.4 + pulseIntensity * 0.3;
-                finalColor = mix(finalColor, stateColor, colorIntensity);
-                
-                // Apply pulse intensity with glow effect
-                finalColor *= (1.0 + pulseIntensity * 0.4);
-                
-                // Add state-dependent glow
-                if (pulseIntensity > 0.5) {
-                    finalColor += stateColor * pulseIntensity * 0.3;
-                }
-                
-                // Add depth and translucency
-                float fresnel = pow(1.0 - abs(dot(normal, viewDir)), 3.0);
-                finalColor += fresnel * vec3(1.0, 1.0, 1.0) * 0.3;
-                
-                // Add internal glow
-                float internalGlow = smoothNoise(vPosition * 3.0 + time * 0.2);
-                finalColor += internalGlow * vec3(0.8, 0.4, 1.0) * 0.4;
-                
-                // Add rim lighting
-                float rim = 1.0 - abs(dot(normal, viewDir));
-                rim = pow(rim, 2.0);
-                finalColor += rim * vec3(0.6, 0.8, 1.0) * 0.5;
-                
-                gl_FragColor = vec4(finalColor, 0.9);
+                    vec2 animatedUv = vUv;
+                    animatedUv.x += sin(time * 0.3 + vPosition.y * 2.0) * 0.015;
+                    animatedUv.y += cos(time * 0.25 + vPosition.x * 2.0) * 0.015;
+                    
+                    vec4 texColor = texture2D(texture1, animatedUv);
+                    
+                    float glow = energy * (sin(time * 2.5) * 0.5 + 0.5);
+                    texColor.rgb += texColor.rgb * glow * 0.4;
+                    
+                    if (state == 1.0) {
+                        float scanLine = sin(vPosition.y * 8.0 + time * 4.0) * 0.5 + 0.5;
+                        vec3 scanColor = vec3(0.2, 0.7, 1.0) * scanLine;
+                        texColor.rgb += scanColor * 0.25;
+                    }
+                    else if (state == 2.0) {
+                        float angle = atan(vPosition.x, vPosition.z) / (2.0 * 3.14159) + 0.5;
+                        float progressGlow = smoothstep(0.0, 1.0, angle);
+                        vec3 thinkColor = vec3(0.4, 1.0, 0.6) * progressGlow;
+                        texColor.rgb += thinkColor * 0.4;
+                    }
+                    else if (state == 3.0) {
+                        float pulse = sin(time * 5.0) * 0.5 + 0.5;
+                        texColor.rgb += texColor.rgb * pulse * 0.3;
+                    }
+                    
+                    vec3 viewDirection = normalize(cameraPosition - vPosition);
+                    float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), 1.8);
+                    vec3 rimColor = vec3(1.0, 0.9, 0.8);
+                    texColor.rgb += fresnel * rimColor * 0.35;
+                    
+                    gl_FragColor = vec4(texColor.rgb, texColor.a);
             }
         `,
         transparent: true,
-        side: THREE.DoubleSide
+        side: this.THREE.DoubleSide
     });
     
-    sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
-    sphereScene.add(sphere);
-    
-    // Add internal energy particles
-    const particleCount = 100;
-    particles = new THREE.Group();
-    
-    for (let i = 0; i < particleCount; i++) {
-        const particleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
-        const particleMaterial = new THREE.MeshBasicMaterial({
-            color: new THREE.Color().setHSL(Math.random() * 0.3 + 0.6, 0.8, 0.6),
-            transparent: true,
-            opacity: 0.8
-        });
-        
-        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-        particle.position.set(
-            (Math.random() - 0.5) * 3.5,
-            (Math.random() - 0.5) * 3.5,
-            (Math.random() - 0.5) * 3.5
-        );
-        
-        particles.add(particle);
+        this.sphere = new this.THREE.Mesh(geometry, this.material);
+        this.scene.add(this.sphere);
     }
     
-    sphereScene.add(particles);
-    
-    // Add ambient and point lights
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    sphereScene.add(ambientLight);
-    
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(5, 5, 5);
-    pointLight.castShadow = true;
-    sphereScene.add(pointLight);
-    
-    // Position camera
-    sphereCamera.position.z = 5;
-    
-    // Animation loop
-    function animate() {
-        requestAnimationFrame(animate);
+    setupLighting() {
+        const ambientLight = new this.THREE.AmbientLight(0x4a90e2, 0.4);
+        this.scene.add(ambientLight);
         
-        const time = Date.now() * 0.001;
-        const deltaTime = time - sphereAnimationStartTime;
+        const keyLight = new this.THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(3, 4, 5);
+        this.scene.add(keyLight);
         
-        // Base rotation
-        let baseRotationSpeed = 0.005;
-        let baseParticleSpeed = 0.01;
-        
-        // Apply animation state effects
-        switch (sphereAnimationState) {
-            case 'listening':
-                // Breathing effect with cyan/blue gradient
-                spherePulseIntensity = Math.sin(time * 6) * 0.4 + 0.6;
-                sphere.scale.setScalar(0.85 + spherePulseIntensity * 0.15);
-                sphereMaterial.uniforms.pulseIntensity.value = spherePulseIntensity;
-                sphereMaterial.uniforms.stateColor.value.setHex(0x06b6d4); // Cyan
-                // Gentle floating motion
-                sphere.position.y = Math.sin(time * 2) * 0.1;
-                // Subtle rotation
-                sphere.rotation.y += 0.003;
-                sphere.rotation.x += 0.001;
-                break;
-                
-            case 'thinking':
-                // Intense spinning with purple/indigo gradient
-                baseRotationSpeed *= 4;
-                sphere.rotation.y += baseRotationSpeed * sphereThinkingRotationSpeed;
-                sphere.rotation.x += baseRotationSpeed * 0.7 * sphereThinkingRotationSpeed;
-                sphere.rotation.z += baseRotationSpeed * 0.3 * sphereThinkingRotationSpeed;
-                sphereMaterial.uniforms.stateColor.value.setHex(0x7c3aed); // Purple
-                // Pulsing scale
-                sphere.scale.setScalar(0.9 + Math.sin(time * 10) * 0.1);
-                // Wobble effect
-                sphere.rotation.z = Math.sin(time * 6) * 0.15;
-                // Particle intensity
-                sphereMaterial.uniforms.pulseIntensity.value = Math.sin(time * 8) * 0.6 + 0.4;
-                break;
-                
-            case 'responding':
-                // Energetic pulsing with emerald/green gradient
-                spherePulseIntensity = Math.sin(time * 15) * 0.7 + 0.3;
-                sphere.scale.setScalar(0.8 + spherePulseIntensity * 0.2);
-                sphereMaterial.uniforms.pulseIntensity.value = spherePulseIntensity;
-                sphereMaterial.uniforms.stateColor.value.setHex(0x059669); // Emerald
-                // Bouncing effect
-                sphere.position.y = Math.sin(time * 8) * 0.15;
-                // Rapid rotation
-                sphere.rotation.y += 0.02;
-                sphere.rotation.x += 0.01;
-                // Faster particle movement
-                baseParticleSpeed *= 3;
-                break;
-                
-            default: // idle
-                // Calm floating with warm gradient
-                sphere.scale.setScalar(1);
-                sphere.rotation.z = 0;
-                sphere.position.y = Math.sin(time * 1.5) * 0.05;
-                sphereMaterial.uniforms.pulseIntensity.value = Math.sin(time * 2) * 0.1;
-                sphereMaterial.uniforms.stateColor.value.setHex(0xf59e0b); // Amber
-                // Very slow rotation
-                sphere.rotation.y += 0.001;
-                sphere.rotation.x += 0.0005;
-                break;
-        }
-        
-        // Apply base rotation
-        sphere.rotation.y += baseRotationSpeed;
-        sphere.rotation.x += baseRotationSpeed * 0.4;
-        
-        // Animate particles with state-dependent effects
-        particles.children.forEach((particle, index) => {
-            let particleSpeed = baseParticleSpeed;
-            let particleColor = particle.material.color;
-            
-            // State-dependent particle behavior
-            switch (sphereAnimationState) {
-                case 'listening':
-                    // Gentle floating particles
-                    particle.position.x += Math.sin(time * 0.5 + index) * particleSpeed * 0.5;
-                    particle.position.y += Math.cos(time * 0.5 + index) * particleSpeed * 0.5;
-                    particle.position.z += Math.sin(time * 0.3 + index * 0.5) * particleSpeed * 0.5;
-                    particle.material.opacity = 0.7 + Math.sin(time * 2 + index) * 0.3;
-                    particleColor.setHex(0x06b6d4); // Cyan
-                    break;
-                    
-                case 'thinking':
-                    // Chaotic, fast-moving particles
-                    particle.position.x += Math.sin(time * 4 + index) * particleSpeed * 2;
-                    particle.position.y += Math.cos(time * 4 + index) * particleSpeed * 2;
-                    particle.position.z += Math.sin(time * 3 + index * 0.5) * particleSpeed * 2;
-                    particle.material.opacity = 0.5 + Math.sin(time * 5 + index) * 0.5;
-                    particleColor.setHex(0x7c3aed); // Purple
-                    // Random size changes
-                    particle.scale.setScalar(0.5 + Math.sin(time * 3 + index) * 0.5);
-                    break;
-                    
-                case 'responding':
-                    // Energetic, expanding particles
-                    particle.position.x += Math.sin(time * 6 + index) * particleSpeed * 3;
-                    particle.position.y += Math.cos(time * 6 + index) * particleSpeed * 3;
-                    particle.position.z += Math.sin(time * 4 + index * 0.5) * particleSpeed * 3;
-                    particle.material.opacity = 0.9 + Math.sin(time * 8 + index) * 0.1;
-                    particleColor.setHex(0x059669); // Emerald
-                    // Pulsing size
-                    particle.scale.setScalar(0.8 + Math.sin(time * 4 + index) * 0.4);
-                    break;
-                    
-                default: // idle
-                    // Calm, slow-moving particles
-                    particle.position.x += Math.sin(time + index) * particleSpeed * 0.3;
-                    particle.position.y += Math.cos(time + index) * particleSpeed * 0.3;
-                    particle.position.z += Math.sin(time + index * 0.5) * particleSpeed * 0.3;
-                    particle.material.opacity = 0.6 + Math.sin(time * 1.5 + index) * 0.2;
-                    particleColor.setHex(0xf59e0b); // Amber
-                    particle.scale.setScalar(1);
-                    break;
-            }
-            
-            // Keep particles within sphere bounds
-            const distance = particle.position.length();
-            if (distance > 1.8) {
-                particle.position.normalize().multiplyScalar(1.8);
-            }
-        });
-        
-        // Update shader time uniform
-        sphereMaterial.uniforms.time.value = time;
-        
-        sphereRenderer.render(sphereScene, sphereCamera);
+        const fillLight = new this.THREE.DirectionalLight(0xadd8e6, 0.5);
+        fillLight.position.set(-3, 2, -2);
+        this.scene.add(fillLight);
     }
     
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        sphereCamera.aspect = container.clientWidth / container.clientHeight;
-        sphereCamera.updateProjectionMatrix();
-        sphereRenderer.setSize(container.clientWidth, container.clientHeight);
-        sphereMaterial.uniforms.resolution.value.set(container.clientWidth, container.clientHeight);
-    });
-    
-    // Start animation
-    animate();
-    
-    // Test animation after 3 seconds
-    setTimeout(() => {
-        console.log('🧪 Testing sphere animations...');
-        if (window.sphereAnimationController) {
-            console.log('✅ Animation controller found');
-            window.sphereAnimationController.setListening();
-            setTimeout(() => {
-                window.sphereAnimationController.setThinking();
-                setTimeout(() => {
-                    window.sphereAnimationController.setResponding();
-                    setTimeout(() => {
-                        window.sphereAnimationController.setIdle();
-                        console.log('✅ Animation test complete');
-                    }, 2000);
-                }, 2000);
-            }, 2000);
-        } else {
-            console.error('❌ Animation controller not found');
+    setState(state) {
+        const stateMap = { 'idle': 0, 'listening': 1, 'thinking': 2, 'speaking': 3, 'error': 4 };
+        this.state = state;
+        if (this.material.uniforms) {
+            this.material.uniforms.state.value = stateMap[state] || 0;
         }
-    }, 3000);
-    
-    // Make animation control functions globally accessible
-    window.sphereAnimationController = {
-        setState: function(state) {
-            sphereAnimationState = state;
-            sphereAnimationStartTime = Date.now() * 0.001;
-            console.log('🎭 Sphere animation state changed to:', state, 'at time:', sphereAnimationStartTime);
-        },
         
-        getState: function() {
-            return sphereAnimationState;
-        },
-        
-        // Specific state setters
-        setListening: function() {
-            this.setState('listening');
-        },
-        
-        setThinking: function() {
-            this.setState('thinking');
-        },
-        
-        setResponding: function() {
-            this.setState('responding');
-        },
-        
-        setIdle: function() {
-            this.setState('idle');
+        switch (state) {
+            case 'speaking': this.setEnergy(0.8); break;
+            case 'listening': this.setEnergy(0.4); break;
+            case 'thinking': this.setEnergy(0.6); break;
+            case 'error': this.setEnergy(0.3); break;
+            default: this.setEnergy(0.1);
         }
-    };
+    }
     
-    // Add interaction with click support
-    let isMouseDown = false;
-    let mouseX = 0;
-    let mouseY = 0;
-    let hasMoved = false;
+    setEnergy(value) {
+        this.energy = Math.max(0, Math.min(1, value));
+        if (this.material.uniforms) {
+            this.material.uniforms.energy.value = this.energy;
+        }
+    }
     
-    container.addEventListener('mousedown', (e) => {
-        isMouseDown = true;
-        hasMoved = false;
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
+    startAnimation() {
+        this.isAnimating = true;
+        this.animate();
+    }
     
-    container.addEventListener('mousemove', (e) => {
-        if (isMouseDown) {
-            const deltaX = e.clientX - mouseX;
-            const deltaY = e.clientY - mouseY;
+    animate() {
+        if (!this.isAnimating) return;
+        
+        requestAnimationFrame(() => this.animate());
+        
+        this.time += 0.016;
+        
+        if (this.sphere) {
+            this.sphere.rotation.y += 0.008;
+            this.sphere.position.y = Math.sin(this.time * 0.8) * 0.05;
             
-            // Only rotate if mouse has moved significantly
-            if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
-                hasMoved = true;
-                sphere.rotation.y += deltaX * 0.01;
-                sphere.rotation.x += deltaY * 0.01;
-                
-                mouseX = e.clientX;
-                mouseY = e.clientY;
+            if (this.material.uniforms) {
+                this.material.uniforms.time.value = this.time;
             }
         }
-    });
+        
+        this.renderer.render(this.scene, this.camera);
+    }
     
-    container.addEventListener('mouseup', (e) => {
-        // If mouse didn't move much, it's a click
-        if (isMouseDown && !hasMoved) {
-            console.log('🎯 Three.js sphere click detected');
-            // Let the click event bubble up to our handlers
-        }
-        isMouseDown = false;
-        hasMoved = false;
-    });
-    
-    container.addEventListener('mouseleave', () => {
-        isMouseDown = false;
-        hasMoved = false;
-    });
-    
-
+    onWindowResize() {
+        this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+    }
 }
 
-
-
-
-
-// Talk button functionality
+// Talk Button - Simple and Clean
 function initTalkButton() {
-    console.log('🔧 Initializing talk button functionality...');
-    
     const talkButton = document.getElementById('talk-button');
-    const aiAssistantSection = document.getElementById('ai-assistant');
-    
-    console.log('Talk button element:', talkButton);
-    console.log('AI Assistant section:', aiAssistantSection);
-    
-    if (!talkButton || !aiAssistantSection) {
-        console.log('❌ Talk button elements not found');
-        return;
-    }
-    
-    console.log('✅ Talk button elements found, setting up interaction...');
+    if (!talkButton) return;
     
     let hasPlayedWelcome = false;
     let isRecording = false;
+    let isProcessing = false;
     
+    // Simple functions
+    function unlockButton() {
+        talkButton.disabled = false;
+        talkButton.classList.remove('listening', 'processing');
+        talkButton.querySelector('i').className = 'fas fa-microphone';
+        
+        // Force reset all processing states
+        isProcessing = false;
+        isRecording = false;
+    }
+    
+
+    
+    function lockButton() {
+        talkButton.disabled = true;
+    }
+    
+    // Ensure button starts unlocked and states are reset
+    unlockButton();
+    
+
+    
+
+    
+        // Welcome message function
     async function playWelcomeMessage() {
-        try {
-            console.log('🎤 Playing welcome message...');
-            
-            // Update button to show it's processing
-            talkButton.classList.add('thinking');
-            talkButton.querySelector('.button-text').textContent = 'Playing welcome...';
-            
-            // Trigger sphere responding animation
-            if (window.sphereAnimationController) {
-                window.sphereAnimationController.setResponding();
-            }
-            
-            // Welcome message text
-            const welcomeText = "Hi, Miguel here! Yes, I know.. pretty cool that now I can answer your questions 24/7. What would you like to know? Click and hold to speak to me.";
-            
-            // Use ElevenLabs TTS to generate and play the welcome message
-            if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
-                // Generate and play the voice message
-                await window.elevenLabsAI.textToSpeech(welcomeText);
-                
-                // After welcome message, change button to microphone
-                setTimeout(() => {
-                    talkButton.classList.remove('thinking');
-                    talkButton.classList.add('ready');
-                    talkButton.querySelector('i').className = 'fas fa-microphone';
-                    talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
-                    
-                    // Reset sphere to idle
-                    if (window.sphereAnimationController) {
-                        window.sphereAnimationController.setIdle();
-                    }
-                }, 1000);
-                
-            } else {
-                // Fallback if no API key
-                talkButton.querySelector('.button-text').textContent = welcomeText;
-                
-                setTimeout(() => {
-                    talkButton.classList.remove('thinking');
-                    talkButton.classList.add('ready');
-                    talkButton.querySelector('i').className = 'fas fa-microphone';
-                    talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
-                }, 3000);
-            }
-            
-        } catch (error) {
-            console.error('❌ Error playing welcome message:', error);
-            
-            // Fallback
-            talkButton.classList.remove('thinking');
-            talkButton.classList.add('ready');
-            talkButton.querySelector('i').className = 'fas fa-microphone';
-            talkButton.querySelector('.button-text').textContent = 'Click & hold to speak';
-            
-            if (window.sphereAnimationController) {
-                window.sphereAnimationController.setIdle();
-            }
+        const welcomeText = "Hi, Miguel here! Yes, it's amazing that now I can answer your questions 24/7. What would you like to know? Click and hold to speak to me.";
+        
+        lockButton();
+        talkButton.classList.add('processing');
+        
+        // Update status to show welcome message
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Playing welcome message...';
+        }
+        
+        if (window.sphereAnimationController) {
+            window.sphereAnimationController.setResponding();
+        }
+        
+        if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
+            await window.elevenLabsAI.textToSpeech(welcomeText);
         }
     }
     
-    // Button press and hold handlers
+    // Mouse events
     talkButton.addEventListener('mousedown', async (e) => {
         e.preventDefault();
-        
-        // Ensure audio context is resumed on first click
-        if (window.elevenLabsAI && window.elevenLabsAI.audioContext && window.elevenLabsAI.audioContext.state === 'suspended') {
-            try {
-                await window.elevenLabsAI.audioContext.resume();
-                console.log('✅ Desktop: Audio context resumed on click');
-            } catch (error) {
-                console.warn('⚠️ Desktop: Could not resume audio context:', error);
-            }
+        if (isProcessing) {
+            return;
         }
         
         if (!hasPlayedWelcome) {
-            // First press - play welcome message
             hasPlayedWelcome = true;
             await playWelcomeMessage();
         } else if (!isRecording) {
-            // Start voice recording on press
             isRecording = true;
-            
-            // Update button to listening state
             talkButton.classList.add('listening');
-            talkButton.querySelector('.button-text').textContent = 'Listening...';
             
-            // Update status indicator
+            // Update status to show listening
             const statusText = document.querySelector('.status-text');
             if (statusText) {
                 statusText.textContent = 'Listening...';
@@ -1299,23 +652,20 @@ function initTalkButton() {
     
     talkButton.addEventListener('mouseup', async (e) => {
         e.preventDefault();
-        
         if (isRecording && hasPlayedWelcome) {
-            // Stop voice recording on release
             isRecording = false;
+            isProcessing = true;
             
-            // Update button to thinking state
             talkButton.classList.remove('listening');
-            talkButton.classList.add('thinking');
-            talkButton.querySelector('.button-text').textContent = 'Processing...';
+            talkButton.classList.add('processing');
+            lockButton();
             
-            // Update status indicator
+            // Update status to show processing
             const statusText = document.querySelector('.status-text');
             if (statusText) {
-                statusText.textContent = 'Processing...';
+                statusText.textContent = 'Processing question...';
             }
             
-            // Trigger sphere thinking animation
             if (window.sphereAnimationController) {
                 window.sphereAnimationController.setThinking();
             }
@@ -1326,23 +676,21 @@ function initTalkButton() {
         }
     });
     
-    // Handle mouse leave to stop recording if user moves away
     talkButton.addEventListener('mouseleave', async (e) => {
         if (isRecording && hasPlayedWelcome) {
             isRecording = false;
+            isProcessing = true;
             
-            // Update button to thinking state
             talkButton.classList.remove('listening');
-            talkButton.classList.add('thinking');
-            talkButton.querySelector('.button-text').textContent = 'Processing...';
+            talkButton.classList.add('processing');
+            lockButton();
             
-            // Update status indicator
+            // Update status to show processing
             const statusText = document.querySelector('.status-text');
             if (statusText) {
-                statusText.textContent = 'Processing...';
+                statusText.textContent = 'Processing question...';
             }
             
-            // Trigger sphere thinking animation
             if (window.sphereAnimationController) {
                 window.sphereAnimationController.setThinking();
             }
@@ -1353,31 +701,26 @@ function initTalkButton() {
         }
     });
     
-    // Touch support for mobile devices
+    // Touch events
     talkButton.addEventListener('touchstart', async (e) => {
         e.preventDefault();
-        
-        // Ensure audio context is resumed on first touch for mobile
-        if (window.elevenLabsAI && window.elevenLabsAI.audioContext && window.elevenLabsAI.audioContext.state === 'suspended') {
-            try {
-                await window.elevenLabsAI.audioContext.resume();
-                console.log('✅ Mobile: Audio context resumed on touch');
-            } catch (error) {
-                console.warn('⚠️ Mobile: Could not resume audio context:', error);
-            }
+        e.stopPropagation();
+        if (isProcessing) {
+            return;
         }
         
         if (!hasPlayedWelcome) {
-            // First touch - play welcome message
             hasPlayedWelcome = true;
             await playWelcomeMessage();
         } else if (!isRecording) {
-            // Start voice recording on touch
             isRecording = true;
-            
-            // Update button to listening state
             talkButton.classList.add('listening');
-            talkButton.querySelector('.button-text').textContent = 'Listening...';
+            
+            // Update status to show listening
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Listening...';
+            }
             
             if (window.elevenLabsAI) {
                 await window.elevenLabsAI.startRecording();
@@ -1387,23 +730,21 @@ function initTalkButton() {
     
     talkButton.addEventListener('touchend', async (e) => {
         e.preventDefault();
-        
+        e.stopPropagation();
         if (isRecording && hasPlayedWelcome) {
-            // Stop voice recording on touch end
             isRecording = false;
+            isProcessing = true;
             
-            // Update button to thinking state
             talkButton.classList.remove('listening');
-            talkButton.classList.add('thinking');
-            talkButton.querySelector('.button-text').textContent = 'Processing...';
+            talkButton.classList.add('processing');
+            lockButton();
             
-            // Update status indicator
+            // Update status to show processing
             const statusText = document.querySelector('.status-text');
             if (statusText) {
-                statusText.textContent = 'Processing...';
+                statusText.textContent = 'Processing question...';
             }
             
-            // Trigger sphere thinking animation
             if (window.sphereAnimationController) {
                 window.sphereAnimationController.setThinking();
             }
@@ -1414,29 +755,60 @@ function initTalkButton() {
         }
     });
     
-    // Add pulse animation to sphere label when section is visible
-    function checkSectionVisibility() {
-        const rect = aiAssistantSection.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+    // Audio completion handling
+    if (window.elevenLabsAI) {
+        // Store the original function
+        const originalOnAudioComplete = window.elevenLabsAI.onAudioComplete;
         
-        if (rect.top < windowHeight * 0.5 && rect.bottom > windowHeight * 0.5) {
-            const sphereLabel = document.querySelector('.sphere-label');
-            if (sphereLabel) {
-                sphereLabel.classList.add('pulse');
-                setTimeout(() => {
-                    sphereLabel.classList.remove('pulse');
-                }, 2000);
+        // Override the original function
+        window.elevenLabsAI.onAudioComplete = function() {
+            // Reset all states
+            isProcessing = false;
+            isRecording = false;
+            
+            // Call the original function first
+            if (originalOnAudioComplete) {
+                originalOnAudioComplete.call(this);
             }
-        }
+            
+            // Then ensure our state is correct
+            setTimeout(() => {
+                if (isProcessing || isRecording) {
+                    isProcessing = false;
+                    isRecording = false;
+                }
+            }, 100);
+        };
+        
+        // Also listen to the global event as backup
+        document.addEventListener('audioCompleted', (event) => {
+            // Force reset states immediately
+            isProcessing = false;
+            isRecording = false;
+            
+            // Update status to show ready
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Ready to chat';
+            }
+            
+            // Also ensure button is unlocked
+            unlockButton();
+        });
+    } else {
+        // Retry after a delay
+        setTimeout(() => {
+            if (window.elevenLabsAI) {
+                const originalOnAudioComplete = window.elevenLabsAI.onAudioComplete;
+                window.elevenLabsAI.onAudioComplete = function() {
+                    isProcessing = false;
+                    isRecording = false;
+                    
+                    if (originalOnAudioComplete) {
+                        originalOnAudioComplete.call(this);
+                    }
+                };
+            }
+        }, 1000);
     }
-    
-    // Check on scroll
-    window.addEventListener('scroll', checkSectionVisibility);
-    
-    // Check on page load
-    setTimeout(checkSectionVisibility, 100);
-    
-    console.log('✅ Talk button functionality initialized');
 }
-
-// Note: initWelcomeMessage is now called in the main DOMContentLoaded listener

@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://api.elevenlabs.io wss://api.elevenlabs.io https://mrparracho-github-io.onrender.com;">
     <title>Miguel Parracho - Tech Lead | Data | AI</title>
     <meta name="description" content="Tech Lead specializing in Data Engineering and Artificial Intelligence. Building scalable solutions and leading technical teams.">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="static/favicon/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="static/favicon/favicon.svg">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,7 +84,7 @@
                 </div>
             </div>
             <div class="hero-visual">
-                <!-- Sphere moved to AI Avatar section -->
+                <!-- Hero visual content can be added here -->
             </div>
         </div>
         <div class="scroll-indicator">
@@ -577,7 +578,7 @@
                 <div class="chat-messages" id="modal-chat-messages">
                     <div class="message assistant">
                         <div class="message-content">
-                            <p>Hi, Miguel here! Yes, I know.. pretty cool that now I can answer your questions 24/7. What would you like to know?</p>
+                            <p>Hi, Miguel here! Yes, it's amazing that now I can answer your questions 24/7. What would you like to know?</p>
                         </div>
                     </div>
                 </div>
@@ -594,8 +595,14 @@
     </div>
 
     <!-- Scripts -->
-    <script src="static/js/particles.min.js"></script>
-    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+            }
+        }
+    </script>
     <script src="static/js/main.js"></script>
     <script src="static/js/rag-chat.js"></script>
     <script src="static/js/elevenlabs-integration.js"></script>
