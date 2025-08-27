@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initLoadingScreen();
     initNavigation();
     initTypingEffect();
-    loadProjects();
+        loadProjects();
     initContactForm();
     initParticles();
     await initAISphere();
@@ -615,12 +615,12 @@ function initTalkButton() {
             statusText.textContent = 'Playing welcome message...';
         }
         
-        if (window.sphereAnimationController) {
-            window.sphereAnimationController.setResponding();
-        }
-        
-        if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
-            await window.elevenLabsAI.textToSpeech(welcomeText);
+            if (window.sphereAnimationController) {
+                window.sphereAnimationController.setResponding();
+            }
+            
+            if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
+                await window.elevenLabsAI.textToSpeech(welcomeText);
         }
     }
     
@@ -772,7 +772,7 @@ function initTalkButton() {
             }
             
             // Then ensure our state is correct
-            setTimeout(() => {
+                setTimeout(() => {
                 if (isProcessing || isRecording) {
                     isProcessing = false;
                     isRecording = false;
