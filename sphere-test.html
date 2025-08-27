@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Orb Sphere Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #00a8ff, #64b5f6, #90caf9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .orb-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 2rem auto;
+            filter: drop-shadow(0 30px 80px rgba(0,168,255,0.6));
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .orb-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: block;
+        }
+
+        /* Enhanced animated glow halo */
+        .orb-container::before {
+            content: "";
+            position: absolute;
+            inset: -15%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%,
+                rgba(255, 255, 255, 0.4) 0%,
+                rgba(173, 216, 230, 0.35) 15%,
+                rgba(135, 206, 250, 0.3) 30%,
+                rgba(100, 181, 246, 0.25) 45%,
+                rgba(64, 181, 246, 0.2) 60%,
+                rgba(33, 150, 243, 0.15) 75%,
+                rgba(25, 118, 210, 0.1) 85%,
+                rgba(0,0,0,0) 95%);
+            filter: blur(60px);
+            pointer-events: none;
+            animation: glow-pulse 6s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        .orb-container::after {
+            content: "";
+            position: absolute;
+            inset: -8%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 25%,
+                rgba(255, 255, 255, 0.15) 0%,
+                rgba(144, 202, 249, 0.2) 25%,
+                rgba(100, 181, 246, 0.15) 50%,
+                rgba(0, 168, 255, 0.1) 75%,
+                rgba(0,0,0,0) 90%);
+            filter: blur(30px);
+            pointer-events: none;
+            animation: inner-glow 4s ease-in-out infinite alternate-reverse;
+            z-index: -1;
+        }
+
+        @keyframes glow-pulse {
+            from { 
+                opacity: 0.7; 
+                transform: scale(1) rotate(0deg); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1.15) rotate(180deg); 
+            }
+        }
+
+        @keyframes inner-glow {
+            from { 
+                opacity: 0.8; 
+                transform: scale(1.05) rotate(0deg); 
+            }
+            to { 
+                opacity: 0.4; 
+                transform: scale(1.2) rotate(-90deg); 
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            color: #ffffff;
+            border: 1px solid #444;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-btn:hover {
+            background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+            border-color: #00a8ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 168, 255, 0.3);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #00a8ff, #0097e6);
+            border-color: #64b5f6;
+            box-shadow: 0 5px 20px rgba(0, 168, 255, 0.4);
+        }
+
+        .api-info {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(26, 26, 26, 0.8);
+            border-radius: 10px;
+            border: 1px solid #333;
+            max-width: 600px;
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        .api-badge {
+            background: #00a8ff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        code {
+            background: #1a1a1a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #64b5f6;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00a8ff;
+            border-radius: 50%;
+            animation: float 10s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #00ff00;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Three.js Library -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+            }
+        }
+    </script>
+    <!-- Background particles -->
+    <div class="bg-particles" id="bg-particles"></div>
+
+    <!-- Debug info -->
+    <div class="debug-info" id="debug-info">
+        <div>Status: Loading...</div>
+        <div>Canvas: Not initialized</div>
+        <div>Orb: Not created</div>
+    </div>
+
+    <div class="container">
+        <h1>AI Orb Sphere Test</h1>
+        
+        <div class="orb-container">
+            <div id="threejs-sphere" class="orb-canvas"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn active" data-state="idle">Idle</button>
+            <button class="control-btn" data-state="listening">Listening</button>
+            <button class="control-btn" data-state="thinking">Thinking</button>
+            <button class="control-btn" data-state="speaking">Speaking</button>
+            <button class="control-btn" data-state="error">Error</button>
+        </div>
+
+        <div class="api-info">
+            <div><span class="api-badge">API</span>Test the orb states and animations</div>
+            <div style="margin-top: 10px;">
+                <code>orb.setState("speaking")</code> • 
+                <code>orb.setEnergy(0.8)</code> • 
+                <code>orb.setThinkingProgress(0.5)</code>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================
+           THREE.JS TEXTURED SPHERE WITH RADIAL GRADIENT
+           ========================= */
+        
+        class TexturedSphere {
+            constructor(container) {
+                this.container = container;
+                this.THREE = null;
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.sphere = null;
+                this.material = null;
+                this.texture = null;
+                
+                this.time = 0;
+                this.state = 'idle';
+                this.energy = 0;
+                this.thinkingProgress = 0;
+                this.isAnimating = false;
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    const THREE = await import('three');
+                    this.THREE = THREE;
+                    
+                    this.setupScene();
+                    await this.createRadialTexture();
+                    this.createSphere();
+                    this.setupLighting();
+                    this.startAnimation();
+                    
+
+                } catch (error) {
+                    console.error('Failed to load Three.js:', error);
+                }
+            }
+            
+            setupScene() {
+                // Scene
+                this.scene = new this.THREE.Scene();
+                
+                // Camera
+                this.camera = new this.THREE.PerspectiveCamera(
+                    75, 
+                    this.container.clientWidth / this.container.clientHeight, 
+                    0.1, 
+                    1000
+                );
+                this.camera.position.z = 4;
+                
+                // Renderer
+                this.renderer = new this.THREE.WebGLRenderer({ 
+                    antialias: true, 
+                    alpha: true,
+                    powerPreference: "high-performance"
+                });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.setClearColor(0x000000, 0);
+                
+                this.container.appendChild(this.renderer.domElement);
+                
+                // Handle resize
+                window.addEventListener('resize', () => this.onWindowResize());
+                
+
+            }
+            
+            async createRadialTexture() {
+                return new Promise((resolve) => {
+                    // Create canvas for radial gradient
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 512;
+                    canvas.height = 512;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Create ultra-rich radial gradient with maximum blue spectrum
+                    const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+                    gradient.addColorStop(0, '#ffffff');     // Pure white center
+                    gradient.addColorStop(0.02, '#fcfeff');  // Barely tinted white
+                    gradient.addColorStop(0.04, '#f8fcff');  // Almost white with hint of blue
+                    gradient.addColorStop(0.07, '#f3f9ff');  // Very faint blue
+                    gradient.addColorStop(0.1, '#e8f4fd');   // Very pale blue
+                    gradient.addColorStop(0.13, '#ddeefb');  // Pale blue
+                    gradient.addColorStop(0.16, '#d1e7fc');  // Soft sky blue
+                    gradient.addColorStop(0.2, '#c5e1fa');   // Light sky blue
+                    gradient.addColorStop(0.25, '#bbdefb');  // Light powder blue
+                    gradient.addColorStop(0.3, '#b0d7f8');   // Powder blue
+                    gradient.addColorStop(0.35, '#90caf9');  // Light blue
+                    gradient.addColorStop(0.4, '#7fc3f7');   // Medium light blue
+                    gradient.addColorStop(0.45, '#64b5f6');  // Medium sky blue
+                    gradient.addColorStop(0.5, '#58aef5');   // Sky blue
+                    gradient.addColorStop(0.55, '#42a5f5');  // Bright blue
+                    gradient.addColorStop(0.6, '#359ff4');   // Bright azure
+                    gradient.addColorStop(0.65, '#2196f3');  // Strong blue
+                    gradient.addColorStop(0.7, '#1f8de8');   // Vibrant blue
+                    gradient.addColorStop(0.75, '#1e88e5');  // Electric blue
+                    gradient.addColorStop(0.78, '#1c7ed6');  // Rich blue
+                    gradient.addColorStop(0.82, '#1976d2');  // Deep blue
+                    gradient.addColorStop(0.85, '#1771c9');  // Deep azure
+                    gradient.addColorStop(0.88, '#1565c0');  // Darker blue
+                    gradient.addColorStop(0.91, '#1360b7');  // Dark blue
+                    gradient.addColorStop(0.93, '#0d47a1');  // Very deep blue
+                    gradient.addColorStop(0.95, '#0c4198');  // Navy blue
+                    gradient.addColorStop(0.97, '#0a3d91');  // Dark navy
+                    gradient.addColorStop(0.98, '#09398a');  // Deep navy
+                    gradient.addColorStop(0.99, '#083781');  // Very dark navy
+                    gradient.addColorStop(1, '#073279');     // Darkest navy edge
+                    
+                    // Fill canvas with gradient
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 512, 512);
+                    
+                    // Add sophisticated texture variations for depth
+                    ctx.globalCompositeOperation = 'overlay';
+                    
+                    // Add subtle radial highlights
+                    for (let i = 0; i < 15; i++) {
+                        const angle = (i / 15) * Math.PI * 2;
+                        const distance = 100 + Math.random() * 150;
+                        const x = 256 + Math.cos(angle) * distance;
+                        const y = 256 + Math.sin(angle) * distance;
+                        const size = Math.random() * 80 + 40;
+                        
+                        const highlightGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
+                        highlightGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+                        highlightGrad.addColorStop(0.5, 'rgba(173,216,230,0.1)'); // Light blue highlight
+                        highlightGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = highlightGrad;
+                        ctx.fillRect(0, 0, 512, 512);
+                    }
+                    
+                    // Add deeper blue accents
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2 + Math.PI / 8;
+                        const distance = 180 + Math.random() * 80;
+                        const x = 256 + Math.cos(angle) * distance;
+                        const y = 256 + Math.sin(angle) * distance;
+                        const size = Math.random() * 60 + 30;
+                        
+                        const accentGrad = ctx.createRadialGradient(x, y, 0, x, y, size);
+                        accentGrad.addColorStop(0, 'rgba(25,118,210,0.2)'); // Deep blue accent
+                        accentGrad.addColorStop(0.7, 'rgba(13,71,161,0.1)'); // Darker blue
+                        accentGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = accentGrad;
+                        ctx.fillRect(0, 0, 512, 512);
+                    }
+                    
+                    // Add concentric ring effects
+                    ctx.globalCompositeOperation = 'soft-light';
+                    for (let ring = 1; ring <= 4; ring++) {
+                        const ringRadius = (ring / 4) * 220 + 50;
+                        const ringGrad = ctx.createRadialGradient(256, 256, ringRadius - 10, 256, 256, ringRadius + 10);
+                        ringGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                        ringGrad.addColorStop(0.5, `rgba(${100 + ring * 20},${150 + ring * 25},255,0.${ring * 2})`);
+                        ringGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.fillStyle = ringGrad;
+                        ctx.fillRect(0, 0, 512, 512);
+                    }
+                    
+                    ctx.globalCompositeOperation = 'source-over';
+                    
+                    // Create Three.js texture from canvas
+                    this.texture = new this.THREE.CanvasTexture(canvas);
+                    this.texture.wrapS = this.THREE.RepeatWrapping;
+                    this.texture.wrapT = this.THREE.RepeatWrapping;
+                    
+    
+                    resolve(this.texture);
+                });
+            }
+            
+            createSphere() {
+                const geometry = new this.THREE.SphereGeometry(2, 64, 64);
+                
+                // Create material with animated properties
+                this.material = new this.THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 },
+                        texture1: { value: this.texture },
+                        energy: { value: 0 },
+                        state: { value: 0 }, // 0=idle, 1=listening, 2=thinking, 3=speaking, 4=error
+                        thinkingProgress: { value: 0 },
+                        resolution: { value: new this.THREE.Vector2(512, 512) }
+                    },
+                    vertexShader: `
+                        uniform float time;
+                        uniform float energy;
+                        varying vec2 vUv;
+                        varying vec3 vPosition;
+                        varying vec3 vNormal;
+                        
+                        void main() {
+                            vUv = uv;
+                            vPosition = position;
+                            vNormal = normal;
+                            
+                            // Breathing animation
+                            vec3 pos = position;
+                            float breathe = sin(time * 0.5) * 0.02;
+                            float energyPulse = energy * 0.1 * sin(time * 2.0);
+                            pos += normal * (breathe + energyPulse);
+                            
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float time;
+                        uniform sampler2D texture1;
+                        uniform float energy;
+                        uniform float state;
+                        uniform float thinkingProgress;
+                        varying vec2 vUv;
+                        varying vec3 vPosition;
+                        varying vec3 vNormal;
+                        
+                        // Improved noise function for organic effects
+                        float noise(vec3 p) {
+                            return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+                        }
+                        
+                        void main() {
+                            // Enhanced UV animation with multiple layers
+                            vec2 animatedUv = vUv;
+                            animatedUv.x += sin(time * 0.3 + vPosition.y * 2.0) * 0.015;
+                            animatedUv.y += cos(time * 0.25 + vPosition.x * 2.0) * 0.015;
+                            
+                            // Add subtle secondary UV flow
+                            vec2 flowUv = animatedUv;
+                            flowUv.x += sin(time * 0.5 + vPosition.z * 3.0) * 0.008;
+                            flowUv.y += cos(time * 0.4 + vPosition.y * 1.5) * 0.008;
+                            
+                            // Sample the radial gradient texture
+                            vec4 texColor = texture2D(texture1, flowUv);
+                            
+                            // Enhanced energy-based glow with multiple frequencies
+                            float glow1 = energy * (sin(time * 2.5) * 0.5 + 0.5);
+                            float glow2 = energy * (cos(time * 3.7) * 0.3 + 0.7);
+                            float combinedGlow = (glow1 + glow2) * 0.4;
+                            texColor.rgb += texColor.rgb * combinedGlow;
+                            
+                            // Add organic pulsing variation
+                            float organicPulse = noise(vPosition + time * 0.2) * 0.1;
+                            texColor.rgb += texColor.rgb * organicPulse * energy;
+                            
+                            // State-specific effects with enhanced visuals
+                            if (state == 1.0) { // Listening - flowing scan lines
+                                float scanLine1 = sin(vPosition.y * 8.0 + time * 4.0) * 0.5 + 0.5;
+                                float scanLine2 = sin(vPosition.y * 12.0 - time * 3.0) * 0.3 + 0.7;
+                                vec3 scanColor = vec3(0.2, 0.7, 1.0) * scanLine1 * scanLine2;
+                                texColor.rgb += scanColor * 0.25;
+                            }
+                            else if (state == 2.0) { // Thinking - smooth progress with sparkles
+                                float angle = atan(vPosition.x, vPosition.z) / (2.0 * 3.14159) + 0.5;
+                                float progressGlow = smoothstep(thinkingProgress - 0.1, thinkingProgress, angle);
+                                vec3 thinkColor = vec3(0.4, 1.0, 0.6) * progressGlow;
+                                
+                                // Add sparkle effect
+                                float sparkle = noise(vPosition * 50.0 + time) > 0.95 ? 1.0 : 0.0;
+                                thinkColor += sparkle * vec3(1.0, 1.0, 0.8) * 0.5;
+                                
+                                texColor.rgb += thinkColor * 0.4;
+                            }
+                            else if (state == 3.0) { // Speaking - dynamic pulsing
+                                float pulse1 = sin(time * 5.0) * 0.5 + 0.5;
+                                float pulse2 = cos(time * 7.0) * 0.3 + 0.7;
+                                float intensity = pulse1 * pulse2 * 0.8;
+                                texColor.rgb += texColor.rgb * intensity;
+                                
+                                // Add warm speaking glow
+                                texColor.rgb += vec3(1.0, 0.9, 0.7) * intensity * 0.2;
+                            }
+                            else if (state == 4.0) { // Error - pulsing red warning
+                                float errorPulse = sin(time * 8.0) * 0.5 + 0.5;
+                                vec3 errorColor = vec3(1.0, 0.2, 0.3) * errorPulse;
+                                texColor.rgb = mix(texColor.rgb, errorColor, 0.6);
+                            }
+                            
+                            // Enhanced fresnel rim lighting with color variation
+                            vec3 viewDirection = normalize(cameraPosition - vPosition);
+                            float fresnel = pow(1.0 - abs(dot(vNormal, viewDirection)), 1.8);
+                            
+                            // Color-shifting rim light
+                            vec3 rimColor = vec3(
+                                1.0,
+                                0.9 + sin(time * 2.0) * 0.1,
+                                0.8 + cos(time * 1.5) * 0.2
+                            );
+                            texColor.rgb += fresnel * rimColor * 0.35;
+                            
+                            // Add subtle iridescence
+                            float iridescence = sin(fresnel * 10.0 + time) * 0.1;
+                            texColor.rgb += vec3(iridescence, iridescence * 0.8, iridescence * 1.2);
+                            
+                            // Final brightness and contrast enhancement
+                            texColor.rgb = pow(texColor.rgb, vec3(0.95)); // Slight gamma correction
+                            texColor.rgb = mix(texColor.rgb, texColor.rgb * 1.1, energy * 0.3);
+                            
+                            gl_FragColor = vec4(texColor.rgb, texColor.a);
+                        }
+                    `,
+                    transparent: true,
+                    side: this.THREE.DoubleSide
+                });
+                
+                this.sphere = new this.THREE.Mesh(geometry, this.material);
+                this.scene.add(this.sphere);
+                
+
+            }
+            
+            setupLighting() {
+                // Enhanced ambient light for better base illumination
+                const ambientLight = new this.THREE.AmbientLight(0x4a90e2, 0.4);
+                this.scene.add(ambientLight);
+                
+                // Main directional light (key light)
+                const keyLight = new this.THREE.DirectionalLight(0xffffff, 1.2);
+                keyLight.position.set(3, 4, 5);
+                keyLight.castShadow = true;
+                this.scene.add(keyLight);
+                
+                // Fill light from opposite side
+                const fillLight = new this.THREE.DirectionalLight(0xadd8e6, 0.5);
+                fillLight.position.set(-3, 2, -2);
+                this.scene.add(fillLight);
+                
+                // Rim light for beautiful edge definition
+                const rimLight = new this.THREE.DirectionalLight(0xe6f3ff, 0.8);
+                rimLight.position.set(-2, -1, 6);
+                this.scene.add(rimLight);
+                
+                // Animated point lights for dynamic glow
+                const pointLight1 = new this.THREE.PointLight(0x64b5f6, 0.8, 15);
+                pointLight1.position.set(-4, 3, 4);
+                this.scene.add(pointLight1);
+                this.pointLight1 = pointLight1; // Store for animation
+                
+                const pointLight2 = new this.THREE.PointLight(0x90caf9, 0.6, 12);
+                pointLight2.position.set(4, -2, 3);
+                this.scene.add(pointLight2);
+                this.pointLight2 = pointLight2; // Store for animation
+                
+                // Atmospheric light
+                const atmosLight = new this.THREE.PointLight(0xb3d9ff, 0.3, 20);
+                atmosLight.position.set(0, 0, -8);
+                this.scene.add(atmosLight);
+            }
+            
+            setState(state) {
+                const stateMap = {
+                    'idle': 0,
+                    'listening': 1,
+                    'thinking': 2,
+                    'speaking': 3,
+                    'error': 4
+                };
+                
+                this.state = state;
+                if (this.material.uniforms) {
+                    this.material.uniforms.state.value = stateMap[state] || 0;
+                }
+                
+                // Set energy based on state
+                switch (state) {
+                    case 'speaking':
+                        this.setEnergy(0.8);
+                        break;
+                    case 'listening':
+                        this.setEnergy(0.4);
+                        break;
+                    case 'thinking':
+                        this.setEnergy(0.6);
+                        break;
+                    case 'error':
+                        this.setEnergy(0.3);
+                        break;
+                    default:
+                        this.setEnergy(0.1);
+                }
+                
+
+            }
+            
+            setEnergy(value) {
+                this.energy = Math.max(0, Math.min(1, value));
+                if (this.material.uniforms) {
+                    this.material.uniforms.energy.value = this.energy;
+                }
+            }
+            
+            setThinkingProgress(value) {
+                this.thinkingProgress = Math.max(0, Math.min(1, value));
+                if (this.material.uniforms) {
+                    this.material.uniforms.thinkingProgress.value = this.thinkingProgress;
+                }
+            }
+            
+            startAnimation() {
+                this.isAnimating = true;
+                this.animate();
+            }
+            
+            animate() {
+                if (!this.isAnimating) return;
+                
+                requestAnimationFrame(() => this.animate());
+                
+                this.time += 0.016;
+                
+                if (this.sphere) {
+                    // Smooth horizontal rotation with subtle variation
+                    const rotationSpeed = 0.008 + Math.sin(this.time * 0.5) * 0.002;
+                    this.sphere.rotation.y += rotationSpeed;
+                    
+                    // Subtle floating motion
+                    this.sphere.position.y = Math.sin(this.time * 0.8) * 0.05;
+                    
+                    // Update shader uniforms
+                    if (this.material.uniforms) {
+                        this.material.uniforms.time.value = this.time;
+                    }
+                }
+                
+                // Animate point lights for dynamic atmosphere
+                if (this.pointLight1) {
+                    this.pointLight1.position.x = -4 + Math.sin(this.time * 0.7) * 1.5;
+                    this.pointLight1.position.y = 3 + Math.cos(this.time * 0.5) * 1;
+                    this.pointLight1.intensity = 0.8 + Math.sin(this.time * 1.2) * 0.3;
+                }
+                
+                if (this.pointLight2) {
+                    this.pointLight2.position.x = 4 + Math.cos(this.time * 0.6) * 1.2;
+                    this.pointLight2.position.z = 3 + Math.sin(this.time * 0.8) * 1;
+                    this.pointLight2.intensity = 0.6 + Math.cos(this.time * 1.5) * 0.2;
+                }
+                
+                this.renderer.render(this.scene, this.camera);
+            }
+            
+            onWindowResize() {
+                this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+            }
+        }
+
+        class Simplex {
+            constructor(seed = 1) {
+                this.grad3 = new Float32Array([
+                    1,1,0,  -1,1,0,  1,-1,0,  -1,-1,0,
+                    1,0,1,  -1,0,1,  1,0,-1, -1,0,-1,
+                    0,1,1,  0,-1,1,  0,1,-1,  0,-1,-1
+                ]);
+                this.p = new Uint8Array(256);
+                let s = seed >>> 0;
+                for (let i=0;i<256;i++){
+                    s = (s*1664525 + 1013904223) >>> 0;
+                    this.p[i] = s & 255;
+                }
+                this.perm = new Uint8Array(512);
+                this.permMod12 = new Uint8Array(512);
+                for (let i=0; i<512; i++){
+                    this.perm[i] = this.p[i & 255];
+                    this.permMod12[i] = this.perm[i] % 12;
+                }
+                this.F2 = 0.5*(Math.sqrt(3)-1);
+                this.G2 = (3-Math.sqrt(3))/6;
+            }
+
+            noise2D(xin, yin){
+                let n0,n1,n2;
+                let s = (xin+yin)*this.F2;
+                let i = Math.floor(xin + s);
+                let j = Math.floor(yin + s);
+                let t = (i+j)*this.G2;
+                let X0 = i - t;
+                let Y0 = j - t;
+                let x0 = xin - X0;
+                let y0 = yin - Y0;
+                let i1, j1;
+                if (x0>y0){ i1=1; j1=0; } else { i1=0; j1=1; }
+                let x1 = x0 - i1 + this.G2;
+                let y1 = y0 - j1 + this.G2;
+                let x2 = x0 - 1.0 + 2.0*this.G2;
+                let y2 = y0 - 1.0 + 2.0*this.G2;
+                let ii = i & 255;
+                let jj = j & 255;
+                let gi0 = this.permMod12[ii+this.perm[jj]]*3;
+                let gi1 = this.permMod12[ii+i1+this.perm[jj+j1]]*3;
+                let gi2 = this.permMod12[ii+1+this.perm[jj+1]]*3;
+                let t0 = 0.5 - x0*x0 - y0*y0;
+                if (t0<0) n0=0.0; else { t0*=t0; n0 = t0*t0*(this.grad3[gi0]*x0 + this.grad3[gi0+1]*y0); }
+                let t1 = 0.5 - x1*x1 - y1*y1;
+                if (t1<0) n1=0.0; else { t1*=t1; n1 = t1*t1*(this.grad3[gi1]*x1 + this.grad3[gi1+1]*y1); }
+                let t2 = 0.5 - x2*x2 - y2*y2;
+                if (t2<0) n2=0.0; else { t2*=t2; n2 = t2*t2*(this.grad3[gi2]*x2 + this.grad3[gi2+1]*y2); }
+                return 70.0*(n0+n1+n2);
+            }
+        }
+
+        /* =========================
+           AI ORB CLASS
+           ========================= */
+        class AIOrb {
+            constructor(canvas, options = {}) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+                // Configuration
+                this.radius = options.radius || 200;
+                this.points = options.points || 120;
+                this.noise = new Simplex(options.seed || (Math.random()*1e9)>>>0);
+                
+                // Animation state
+                this.t = 0;
+                this.autoBreath = 0;
+                this.pulse = 0;
+                this.energy = 0;
+                this.state = 'idle';
+                this.thinkingProgress = 0;
+                this.ripples = [];
+
+                // Colors
+                this.colors = {
+                    primary: '#00a8ff',
+                    accent: '#64b5f6',
+                    light: '#90caf9',
+                    white: '#ffffff'
+                };
+
+                this.setupCanvas();
+                this.startAnimation();
+                
+    
+                this.updateDebugInfo('Orb: ✅ Initialized');
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                const w = Math.floor(rect.width * this.pixelRatio);
+                const h = Math.floor(rect.height * this.pixelRatio);
+                
+                this.canvas.width = w;
+                this.canvas.height = h;
+                this.w = w;
+                this.h = h;
+                this.cx = w / 2;
+                this.cy = h / 2;
+
+
+                this.updateDebugInfo(`Canvas: ${w}x${h}`);
+
+                // Handle resize
+                window.addEventListener('resize', () => this.setupCanvas());
+            }
+
+            setState(state) {
+                this.state = state;
+                this.ripples.push({ r: this.radius * 0.7, alpha: 0.7 });
+
+                this.updateDebugInfo(`State: ${state}`);
+            }
+
+            setEnergy(value) {
+                this.energy = Math.max(0, Math.min(1, value));
+            }
+
+            setThinkingProgress(value) {
+                this.thinkingProgress = Math.max(0, Math.min(1, value));
+            }
+
+            drawBackground() {
+                const gradient = this.ctx.createRadialGradient(
+                    this.cx, this.cy * 0.6, this.radius * 0.1,
+                    this.cx, this.cy, this.radius * 2.5
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                gradient.addColorStop(0.3, 'rgba(144, 202, 249, 0.15)');
+                gradient.addColorStop(0.6, 'rgba(100, 181, 246, 0.1)');
+                gradient.addColorStop(0.9, 'rgba(0, 168, 255, 0.05)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.w, this.h);
+            }
+
+            drawOrb() {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.translate(this.cx, this.cy);
+
+                // Calculate dynamic radius
+                const breathe = Math.sin(this.autoBreath * 0.5) * 0.02;
+                const energyPulse = this.energy * 0.15;
+                const actualRadius = this.radius * (1 + breathe + energyPulse);
+
+                // Draw main sphere
+                ctx.beginPath();
+                ctx.arc(0, 0, actualRadius, 0, Math.PI * 2);
+
+                // Marble-like gradient
+                const gradient = ctx.createRadialGradient(
+                    -actualRadius * 0.3, -actualRadius * 0.3, actualRadius * 0.1,
+                    0, 0, actualRadius * 1.1
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                gradient.addColorStop(0.2, this.hexToRgba(this.colors.light, 0.9));
+                gradient.addColorStop(0.5, this.hexToRgba(this.colors.accent, 0.85));
+                gradient.addColorStop(0.8, this.hexToRgba(this.colors.primary, 0.8));
+                gradient.addColorStop(1, this.hexToRgba(this.colors.primary, 0.4));
+
+                ctx.fillStyle = gradient;
+                ctx.shadowBlur = 80;
+                ctx.shadowColor = this.hexToRgba(this.colors.primary, 0.5);
+                ctx.fill();
+
+                // Add marble veining
+                this.drawMarbleVeins(actualRadius);
+
+                // Specular highlight
+                ctx.globalCompositeOperation = 'lighter';
+                const highlight = ctx.createRadialGradient(
+                    -actualRadius * 0.4, -actualRadius * 0.4, 0,
+                    -actualRadius * 0.4, -actualRadius * 0.4, actualRadius * 0.6
+                );
+                highlight.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                highlight.addColorStop(0.3, 'rgba(255, 255, 255, 0.3)');
+                highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                ctx.beginPath();
+                ctx.arc(0, 0, actualRadius, 0, Math.PI * 2);
+                ctx.fillStyle = highlight;
+                ctx.fill();
+
+                // Rim lighting
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 2 * this.pixelRatio;
+                ctx.stroke();
+
+                ctx.globalCompositeOperation = 'source-over';
+
+                // State-specific effects
+                this.drawStateEffects(actualRadius);
+
+                ctx.restore();
+            }
+
+            drawMarbleVeins(radius) {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.globalAlpha = 0.2;
+
+                for (let layer = 0; layer < 3; layer++) {
+                    ctx.beginPath();
+                    const points = 40;
+                    
+                    for (let i = 0; i <= points; i++) {
+                        const angle = (i / points) * Math.PI * 3 + layer * Math.PI / 3;
+                        const noise = this.noise.noise2D(
+                            Math.cos(angle) * 0.03 + this.t * 0.1,
+                            Math.sin(angle) * 0.03 + layer
+                        );
+                        const veinRadius = radius * 0.4 + noise * radius * 0.6;
+                        const x = Math.cos(angle) * veinRadius;
+                        const y = Math.sin(angle) * veinRadius;
+
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+
+                    const veinColor = layer === 0 ? this.colors.primary :
+                                     layer === 1 ? this.colors.accent : this.colors.light;
+                    ctx.strokeStyle = this.hexToRgba(veinColor, 0.4);
+                    ctx.lineWidth = (4 - layer) * this.pixelRatio;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+
+            drawStateEffects(radius) {
+                const ctx = this.ctx;
+
+                switch (this.state) {
+                    case 'speaking':
+                        // Pulsing rings
+                        const ringRadius = radius + 40 + Math.sin(this.t * 3) * 10;
+                        ctx.strokeStyle = this.hexToRgba(this.colors.light, 0.6);
+                        ctx.lineWidth = 3 * this.pixelRatio;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'listening':
+                        // Scan line
+                        const scanY = Math.sin(this.t * 1.5) * radius * 0.8;
+                        const scanGradient = ctx.createLinearGradient(-radius, scanY, radius, scanY);
+                        scanGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                        scanGradient.addColorStop(0.5, this.hexToRgba(this.colors.accent, 0.8));
+                        scanGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        
+                        ctx.strokeStyle = scanGradient;
+                        ctx.lineWidth = 4 * this.pixelRatio;
+                        ctx.beginPath();
+                        ctx.ellipse(0, scanY, radius * 0.9, radius * 0.3, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+
+                    case 'thinking':
+                        // Progress arc
+                        ctx.strokeStyle = this.hexToRgba(this.colors.light, 0.9);
+                        ctx.lineWidth = 6 * this.pixelRatio;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        const startAngle = -Math.PI / 2;
+                        const endAngle = startAngle + Math.PI * 2 * this.thinkingProgress;
+                        ctx.arc(0, 0, radius + 30, startAngle, endAngle);
+                        ctx.stroke();
+                        break;
+
+                    case 'error':
+                        // Error X
+                        const errorSize = radius * 0.6;
+                        ctx.strokeStyle = 'rgba(255, 77, 109, 0.9)';
+                        ctx.lineWidth = 8 * this.pixelRatio;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(-errorSize, -errorSize);
+                        ctx.lineTo(errorSize, errorSize);
+                        ctx.moveTo(errorSize, -errorSize);
+                        ctx.lineTo(-errorSize, errorSize);
+                        ctx.stroke();
+                        break;
+                }
+            }
+
+            drawRipples() {
+                const ctx = this.ctx;
+                
+                for (let i = this.ripples.length - 1; i >= 0; i--) {
+                    const ripple = this.ripples[i];
+                    
+                    ctx.save();
+                    ctx.translate(this.cx, this.cy);
+                    ctx.strokeStyle = this.hexToRgba(this.colors.primary, ripple.alpha);
+                    ctx.lineWidth = 3 * this.pixelRatio;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, ripple.r, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ripple.r += 3;
+                    ripple.alpha *= 0.96;
+
+                    if (ripple.alpha < 0.02) {
+                        this.ripples.splice(i, 1);
+                    }
+                }
+            }
+
+            hexToRgba(hex, alpha) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+            animate() {
+                const dt = 16;
+                this.t += dt / 1000;
+                this.autoBreath += dt / 1000;
+
+                // Smooth energy transitions
+                const idle = (Math.sin(this.autoBreath * 1.2) * 0.5 + 0.5) * 0.2;
+                const targetEnergy = Math.max(0, Math.min(1.2, this.energy * 0.7 + idle));
+                this.pulse += (targetEnergy - this.pulse) * 0.15;
+
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.w, this.h);
+
+                // Draw layers
+                this.drawBackground();
+                
+                const prevEnergy = this.energy;
+                this.energy = this.pulse;
+                this.drawOrb();
+                this.energy = prevEnergy;
+                
+                this.drawRipples();
+
+                requestAnimationFrame(() => this.animate());
+            }
+
+            startAnimation() {
+                this.animate();
+            }
+
+            updateDebugInfo(info) {
+                const debugElement = document.getElementById('debug-info');
+                if (debugElement) {
+                    const lines = debugElement.innerHTML.split('<div>');
+                    if (info.startsWith('Status:')) {
+                        lines[1] = info + '</div>';
+                    } else if (info.startsWith('Canvas:')) {
+                        lines[2] = info + '</div>';
+                    } else if (info.startsWith('Orb:') || info.startsWith('State:')) {
+                        lines[3] = info + '</div>';
+                    }
+                    debugElement.innerHTML = lines.join('<div>');
+                }
+            }
+        }
+
+        /* =========================
+           INITIALIZATION
+           ========================= */
+        document.addEventListener('DOMContentLoaded', function() {
+    
+            
+            // Update debug info
+            document.getElementById('debug-info').innerHTML = `
+                <div>Status: ✅ Ready</div>
+                <div>Canvas: Initializing...</div>
+                <div>Orb: Creating...</div>
+            `;
+
+            // Create background particles
+            createBackgroundParticles();
+
+            // Initialize the textured sphere
+            const container = document.getElementById('threejs-sphere');
+            if (container) {
+                const sphere = new TexturedSphere(container);
+                window.testOrb = sphere; // Expose globally
+                
+                // Thinking progress demo
+                let thinkTimer = null;
+                const startThinkingLoop = () => {
+                    if (thinkTimer) clearInterval(thinkTimer);
+                    thinkTimer = setInterval(() => {
+                        if (sphere.state === 'thinking') {
+                            const progress = (sphere.thinkingProgress + 0.02) % 1;
+                            sphere.setThinkingProgress(progress);
+                        }
+                    }, 80);
+                };
+
+                // Control button handlers
+                document.querySelectorAll('.control-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Update active state
+                        document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // Set sphere state
+                        const state = btn.dataset.state;
+                        sphere.setState(state);
+                        
+                        if (state === 'thinking') {
+                            startThinkingLoop();
+                        } else {
+                            if (thinkTimer) clearInterval(thinkTimer);
+                        }
+                    });
+                });
+
+    
+            } else {
+                console.error('❌ Canvas element not found');
+            }
+        });
+
+        function createBackgroundParticles() {
+            const container = document.getElementById('bg-particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (5 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Expose global functions for console testing
+        window.testSphere = {
+            setState: (state) => window.testOrb?.setState(state),
+            setEnergy: (energy) => window.testOrb?.setEnergy(energy),
+            setProgress: (progress) => window.testOrb?.setThinkingProgress(progress)
+        };
+    </script>
+</body>
+</html>

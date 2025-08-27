@@ -133,6 +133,7 @@ async def ask(payload: dict):
                     yield b"event: token\n"
                     yield f"data: {{\"token\": {json.dumps(token)}}}\n\n".encode()
             
+            print(f"🤖 Generated response: {full}")
             # Send completion event
             yield b"event: done\n"
             yield f"data: {{\"text\": {json.dumps(full)}}}\n\n".encode()
