@@ -288,6 +288,7 @@ class ElevenLabsConversationalAI {
             });
             
             this.audioChunks = [];
+            this.recordingStartTime = Date.now(); // Track when recording started
             
             this.mediaRecorder.ondataavailable = (event) => {
                 this.audioChunks.push(event.data);
@@ -338,15 +339,37 @@ class ElevenLabsConversationalAI {
     }
     
     async processAudioRecording() {
-        // Update status to show processing
-        const statusText = document.querySelector('.status-text');
-        if (statusText) {
-            statusText.textContent = 'Processing question...';
-        }
-        
         try {
-            // Create audio blob with the recorded format
+            // Check if we have any audio data
+            if (!this.audioChunks || this.audioChunks.length === 0) {
+                console.warn('⚠️ No audio data captured');
+                this.handleNoAudioCaptured();
+                return;
+            }
+            
+            // Check recording duration (minimum 500ms to avoid accidental clicks)
+            const recordingDuration = Date.now() - this.recordingStartTime;
+            if (recordingDuration < 500) {
+                console.warn('⚠️ Recording too short:', recordingDuration + 'ms');
+                this.handleShortRecording();
+                return;
+            }
+            
+            // Create audio blob and check if it has meaningful content
             const audioBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType });
+            
+            // Check if the blob has actual content (not just empty data)
+            if (audioBlob.size < 100) { // Less than 100 bytes is likely empty
+                console.warn('⚠️ Audio blob too small:', audioBlob.size + ' bytes');
+                this.handleNoAudioCaptured();
+                return;
+            }
+            
+            // Update status to show processing
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Processing question...';
+            }
             
             // Create an actual audio file from the blob
             const audioFile = await this.createAudioFile(audioBlob);
@@ -1020,6 +1043,52 @@ class ElevenLabsConversationalAI {
         if (statusText) {
             statusText.textContent = 'Ready to chat';
         }
+    }
+    
+    // Handle cases where no audio was captured
+    handleNoAudioCaptured() {
+        console.log('ℹ️ No audio captured - resetting state');
+        
+        // Update status to show no audio captured
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'No audio captured. Please try again.';
+        }
+        
+        // Reset sphere animation
+        if (window.sphereAnimationController) {
+            window.sphereAnimationController.setIdle();
+        }
+        
+        // Emit event to reset main.js states
+        document.dispatchEvent(new CustomEvent('audioCompleted'));
+        
+        // Reset internal state
+        this.isRecording = false;
+        this.audioChunks = [];
+    }
+    
+    // Handle cases where recording was too short
+    handleShortRecording() {
+        console.log('ℹ️ Recording too short - resetting state');
+        
+        // Update status to show recording too short
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+            statusText.textContent = 'Recording too short. Please hold the button while speaking.';
+        }
+        
+        // Reset sphere animation
+        if (window.sphereAnimationController) {
+            window.sphereAnimationController.setIdle();
+        }
+        
+        // Emit event to reset main.js states
+        document.dispatchEvent(new CustomEvent('audioCompleted'));
+        
+        // Reset internal state
+        this.isRecording = false;
+        this.audioChunks = [];
     }
     
 }
