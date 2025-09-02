@@ -47,12 +47,6 @@
 - Technologies: FastAPI, OpenAI GPT, PostgreSQL with pgvector, React
 - Features: Real-time streaming responses, voice interaction capabilities
 
-### Data Pipeline Monitoring Dashboard
-- Real-time monitoring solution for data pipeline health
-- Alerting system for data quality issues
-- Technologies: Python, FastAPI, React, PostgreSQL, Redis
-- Features: Custom metrics, automated alerts, historical trend analysis
-
 ### Anomaly Detection ML Model
 - Developed and deployed production ML model achieving 94% accuracy
 - Integrated with Big Data platform for automated troubleshooting

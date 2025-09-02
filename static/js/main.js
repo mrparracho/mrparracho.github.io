@@ -577,6 +577,8 @@ function initTalkButton() {
     let hasPlayedWelcome = false;
     let isRecording = false;
     let isProcessing = false;
+    let microphoneAuthorized = false;
+    let recordingStartTime = 0; // Track when recording started
     
     // Simple functions
     function unlockButton() {
@@ -589,8 +591,6 @@ function initTalkButton() {
         isRecording = false;
     }
     
-
-    
     function lockButton() {
         talkButton.disabled = true;
     }
@@ -598,11 +598,59 @@ function initTalkButton() {
     // Ensure button starts unlocked and states are reset
     unlockButton();
     
-
+    // Request microphone access
+    async function requestMicrophoneAccess() {
+        try {
+            // Update status to show requesting microphone access
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Requesting microphone access...';
+            }
+            
+            // Request microphone access with basic audio settings
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            });
+            
+            // Immediately stop the stream since we just need permission
+            mediaStream.getTracks().forEach(track => {
+                track.stop();
+            });
+            
+            microphoneAuthorized = true;
+            
+            // Update status to show microphone authorized
+            if (statusText) {
+                statusText.textContent = 'Microphone access granted';
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to get microphone access:', error);
+            microphoneAuthorized = false;
+            
+            // Update status to show microphone access denied
+            const statusText = document.querySelector('.status-text');
+            if (statusText) {
+                statusText.textContent = 'Microphone access denied';
+            }
+            
+            if (error.name === 'NotAllowedError') {
+                alert('Microphone access denied. Please:\n1. Click the microphone icon in your browser address bar\n2. Select "Allow" for microphone access\n3. Refresh the page and try again');
+            } else if (error.name === 'NotSupportedError') {
+                alert('Audio recording not supported in this browser. Please try Chrome, Firefox, or Edge.');
+            } else {
+                alert(`Error: ${error.message}. Please check your microphone settings and try again.`);
+            }
+            
+            return false;
+        }
+    }
     
-
-    
-        // Welcome message function
+    // Welcome message function
     async function playWelcomeMessage() {
         const welcomeText = "Hi, Miguel here! Yes, it's amazing that now I can answer your questions 24/7. What would you like to know? Click and hold to speak to me.";
         
@@ -615,13 +663,20 @@ function initTalkButton() {
             statusText.textContent = 'Playing welcome message...';
         }
         
-            if (window.sphereAnimationController) {
-                window.sphereAnimationController.setResponding();
-            }
-            
-            if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
-                await window.elevenLabsAI.textToSpeech(welcomeText);
+        if (window.sphereAnimationController) {
+            window.sphereAnimationController.setResponding();
         }
+        
+        if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
+            await window.elevenLabsAI.textToSpeech(welcomeText);
+        }
+    }
+    
+    // Check if recording duration is sufficient
+    function isRecordingDurationSufficient() {
+        const minDuration = 500; // Minimum 500ms recording
+        const duration = Date.now() - recordingStartTime;
+        return duration >= minDuration;
     }
     
     // Mouse events
@@ -632,10 +687,20 @@ function initTalkButton() {
         }
         
         if (!hasPlayedWelcome) {
-            hasPlayedWelcome = true;
-            await playWelcomeMessage();
-        } else if (!isRecording) {
+            // First time: request microphone access, then play welcome message
+            const micAccessGranted = await requestMicrophoneAccess();
+            if (micAccessGranted) {
+                hasPlayedWelcome = true;
+                await playWelcomeMessage();
+            } else {
+                // If microphone access failed, unlock button and reset state
+                unlockButton();
+                hasPlayedWelcome = false;
+            }
+        } else if (!isRecording && microphoneAuthorized) {
+            // Only allow recording if microphone is authorized
             isRecording = true;
+            recordingStartTime = Date.now(); // Record when recording started
             talkButton.classList.add('listening');
             
             // Update status to show listening
@@ -652,7 +717,45 @@ function initTalkButton() {
     
     talkButton.addEventListener('mouseup', async (e) => {
         e.preventDefault();
-        if (isRecording && hasPlayedWelcome) {
+        if (isRecording && hasPlayedWelcome && microphoneAuthorized) {
+            // Check if recording duration is sufficient
+            if (!isRecordingDurationSufficient()) {
+                // Recording too short - reset without processing
+                console.log('⚠️ Recording too short, resetting state');
+                isRecording = false;
+                isProcessing = false;
+                
+                talkButton.classList.remove('listening');
+                unlockButton();
+                
+                // Update status to show recording too short
+                const statusText = document.querySelector('.status-text');
+                if (statusText) {
+                    statusText.textContent = 'Recording too short. Please hold the button while speaking.';
+                }
+                
+                // Reset sphere animation
+                if (window.sphereAnimationController) {
+                    window.sphereAnimationController.setIdle();
+                }
+                
+                // Stop recording immediately
+                if (window.elevenLabsAI) {
+                    await window.elevenLabsAI.stopRecording();
+                }
+                
+                // Reset status after a short delay
+                setTimeout(() => {
+                    const statusText = document.querySelector('.status-text');
+                    if (statusText) {
+                        statusText.textContent = 'Ready to chat';
+                    }
+                }, 2000);
+                
+                return;
+            }
+            
+            // Recording duration is sufficient - proceed with processing
             isRecording = false;
             isProcessing = true;
             
@@ -677,7 +780,44 @@ function initTalkButton() {
     });
     
     talkButton.addEventListener('mouseleave', async (e) => {
-        if (isRecording && hasPlayedWelcome) {
+        if (isRecording && hasPlayedWelcome && microphoneAuthorized) {
+            // Check if recording duration is sufficient
+            if (!isRecordingDurationSufficient()) {
+                // Recording too short - reset without processing
+                isRecording = false;
+                isProcessing = false;
+                
+                talkButton.classList.remove('listening');
+                unlockButton();
+                
+                // Update status to show recording too short
+                const statusText = document.querySelector('.status-text');
+                if (statusText) {
+                    statusText.textContent = 'Recording too short. Please hold the button while speaking.';
+                }
+                
+                // Reset sphere animation
+                if (window.sphereAnimationController) {
+                    window.sphereAnimationController.setIdle();
+                }
+                
+                // Stop recording immediately
+                if (window.elevenLabsAI) {
+                    await window.elevenLabsAI.stopRecording();
+                }
+                
+                // Reset status after a short delay
+                setTimeout(() => {
+                    const statusText = document.querySelector('.status-text');
+                    if (statusText) {
+                        statusText.textContent = 'Ready to chat';
+                    }
+                }, 2000);
+                
+                return;
+            }
+            
+            // Recording duration is sufficient - proceed with processing
             isRecording = false;
             isProcessing = true;
             
@@ -701,7 +841,7 @@ function initTalkButton() {
         }
     });
     
-    // Touch events
+    // Touch events - apply the same logic
     talkButton.addEventListener('touchstart', async (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -710,10 +850,20 @@ function initTalkButton() {
         }
         
         if (!hasPlayedWelcome) {
-            hasPlayedWelcome = true;
-            await playWelcomeMessage();
-        } else if (!isRecording) {
+            // First time: request microphone access, then play welcome message
+            const micAccessGranted = await requestMicrophoneAccess();
+            if (micAccessGranted) {
+                hasPlayedWelcome = true;
+                await playWelcomeMessage();
+            } else {
+                // If microphone access failed, unlock button and reset state
+                unlockButton();
+                hasPlayedWelcome = false;
+            }
+        } else if (!isRecording && microphoneAuthorized) {
+            // Only allow recording if microphone is authorized
             isRecording = true;
+            recordingStartTime = Date.now(); // Record when recording started
             talkButton.classList.add('listening');
             
             // Update status to show listening
@@ -731,7 +881,44 @@ function initTalkButton() {
     talkButton.addEventListener('touchend', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (isRecording && hasPlayedWelcome) {
+        if (isRecording && hasPlayedWelcome && microphoneAuthorized) {
+            // Check if recording duration is sufficient
+            if (!isRecordingDurationSufficient()) {
+                // Recording too short - reset without processing
+                isRecording = false;
+                isProcessing = false;
+                
+                talkButton.classList.remove('listening');
+                unlockButton();
+                
+                // Update status to show recording too short
+                const statusText = document.querySelector('.status-text');
+                if (statusText) {
+                    statusText.textContent = 'Recording too short. Please hold the button while speaking.';
+                }
+                
+                // Reset sphere animation
+                if (window.sphereAnimationController) {
+                    window.sphereAnimationController.setIdle();
+                }
+                
+                // Stop recording immediately
+                if (window.elevenLabsAI) {
+                    await window.elevenLabsAI.stopRecording();
+                }
+                
+                // Reset status after a short delay
+                setTimeout(() => {
+                    const statusText = document.querySelector('.status-text');
+                    if (statusText) {
+                        statusText.textContent = 'Ready to chat';
+                    }
+                }, 2000);
+                
+                return;
+            }
+            
+            // Recording duration is sufficient - proceed with processing
             isRecording = false;
             isProcessing = true;
             
