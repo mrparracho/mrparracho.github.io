@@ -12,9 +12,6 @@ from typing import List, Dict, Any, Optional
 from fastapi import UploadFile, HTTPException
 import aiofiles
 
-from .rag import chunk_markdown, embed
-from .chroma_db import chroma_manager
-
 class DocumentManager:
     def __init__(self):
         self.upload_dir = Path("uploads")
@@ -46,6 +43,10 @@ class DocumentManager:
     async def upload_document(self, file: UploadFile) -> Dict[str, Any]:
         """Upload and process a document."""
         try:
+            # Import here to avoid circular imports
+            from .rag import chunk_markdown, embed
+            from .chroma_db import chroma_manager
+            
             # Validate file type
             if not file.filename or not file.filename.lower().endswith(('.md', '.txt', '.pdf')):
                 raise HTTPException(400, "Only .md, .txt, and .pdf files are supported")
@@ -95,6 +96,8 @@ class DocumentManager:
             
             self.save_documents_db()
             
+            print(f"✅ Uploaded document: {file.filename} with {len(chunks)} chunks")
+            
             return {
                 "id": doc_id,
                 "filename": file.filename,
@@ -109,6 +112,9 @@ class DocumentManager:
                     os.remove(file_path)
                 except:
                     pass
+            print(f"Error in upload_document: {e}")
+            import traceback
+            traceback.print_exc()
             raise HTTPException(500, f"Error processing document: {str(e)}")
     
     async def extract_pdf_text(self, file_path: Path) -> str:
@@ -140,6 +146,9 @@ class DocumentManager:
             if doc_id not in self.documents_db:
                 return False
             
+            # Import here to avoid circular imports
+            from .chroma_db import chroma_manager
+            
             # Get document info
             doc_info = self.documents_db[doc_id]
             file_path = Path(doc_info["file_path"])
@@ -164,6 +173,10 @@ class DocumentManager:
     async def reingest_all(self) -> Dict[str, Any]:
         """Re-ingest all documents."""
         try:
+            # Import here to avoid circular imports
+            from .rag import chunk_markdown, embed
+            from .chroma_db import chroma_manager
+            
             total_chunks = 0
             processed_docs = 0
             
@@ -214,11 +227,17 @@ class DocumentManager:
             }
             
         except Exception as e:
+            print(f"Error in reingest_all: {e}")
+            import traceback
+            traceback.print_exc()
             raise HTTPException(500, f"Error during re-ingestion: {str(e)}")
     
     async def reset_collection(self) -> Dict[str, Any]:
         """Reset the entire collection."""
         try:
+            # Import here to avoid circular imports
+            from .chroma_db import chroma_manager
+            
             # Reset ChromaDB
             await chroma_manager.reset_collection()
             
@@ -241,12 +260,25 @@ class DocumentManager:
             }
             
         except Exception as e:
+            print(f"Error in reset_collection: {e}")
+            import traceback
+            traceback.print_exc()
             raise HTTPException(500, f"Error resetting collection: {str(e)}")
     
     async def get_collection_stats(self) -> Dict[str, Any]:
         """Get collection statistics."""
         try:
+            # Import here to avoid circular imports
+            from .chroma_db import chroma_manager
+            
             chroma_info = await chroma_manager.get_collection_info()
+            
+            # Calculate total chunks from our local database (more accurate)
+            total_chunks_local = sum(doc["chunk_count"] for doc in self.documents_db.values())
+            
+            # Get ChromaDB info for comparison
+            chroma_chunks = chroma_info.get("total_chunks", 0)
+            chroma_docs = chroma_info.get("total_documents", 0)
             
             # Calculate total file size
             total_size = sum(doc["file_size"] for doc in self.documents_db.values())
@@ -257,15 +289,27 @@ class DocumentManager:
                 dates = [doc.get("last_updated", doc["upload_date"]) for doc in self.documents_db.values()]
                 last_updated = max(dates) if dates else None
             
+            # Log for debugging
+            print(f"📊 Stats Debug: Local chunks={total_chunks_local}, ChromaDB chunks={chroma_chunks}, Local docs={len(self.documents_db)}, ChromaDB docs={chroma_docs}")
+            
             return {
                 "total_documents": len(self.documents_db),
-                "total_chunks": chroma_info.get("total_chunks", 0),
+                "total_chunks": total_chunks_local,  # Use local count for accuracy
                 "collection_size": total_size,
                 "last_updated": last_updated,
-                "chroma_info": chroma_info
+                "chroma_info": chroma_info,
+                "debug_info": {
+                    "local_chunks": total_chunks_local,
+                    "chroma_chunks": chroma_chunks,
+                    "local_docs": len(self.documents_db),
+                    "chroma_docs": chroma_docs
+                }
             }
             
         except Exception as e:
+            print(f"Error in get_collection_stats: {e}")
+            import traceback
+            traceback.print_exc()
             raise HTTPException(500, f"Error getting collection stats: {str(e)}")
 
 # Global instance

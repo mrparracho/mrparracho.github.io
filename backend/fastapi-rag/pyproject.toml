@@ -11,6 +11,8 @@ dependencies = [
     "chromadb>=0.4.22",
     "aiohttp>=3.12.15",
     "websockets>=15.0.1",
+    "python-multipart>=0.0.20",
+    "aiofiles>=24.1.0",
 ]
 
 [project.optional-dependencies]

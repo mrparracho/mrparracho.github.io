@@ -80,11 +80,38 @@ class ChromaDBManager:
     
     async def get_collection_info(self) -> Dict[str, Any]:
         """Get information about the collection."""
-        count = self.collection.count()
+        total_chunks = self.collection.count()
+        
+        # Get unique document IDs to count actual documents
+        try:
+            # Get all metadata to count unique documents
+            all_data = self.collection.get(include=["metadatas"])
+            unique_docs = set()
+            for metadata in all_data["metadatas"]:
+                if metadata and "doc_id" in metadata:
+                    unique_docs.add(metadata["doc_id"])
+            total_documents = len(unique_docs)
+        except Exception as e:
+            print(f"Warning: Could not get unique document count: {e}")
+            total_documents = 0
+        
         return {
-            "total_documents": count,
+            "total_chunks": total_chunks,
+            "total_documents": total_documents,
             "collection_name": self.collection.name
         }
+    
+    async def get_chunks_by_document(self, doc_id: str) -> int:
+        """Get the number of chunks for a specific document."""
+        try:
+            results = self.collection.get(
+                where={"doc_id": doc_id},
+                include=["metadatas"]
+            )
+            return len(results["ids"]) if results["ids"] else 0
+        except Exception as e:
+            print(f"Error getting chunks for document {doc_id}: {e}")
+            return 0
     
     async def reset_collection(self):
         """Reset the collection (useful for testing)."""

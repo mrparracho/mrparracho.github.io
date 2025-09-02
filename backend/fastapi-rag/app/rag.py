@@ -3,7 +3,8 @@ from typing import List, Tuple
 import os
 from openai import AsyncOpenAI
 
-from .chroma_db import chroma_manager
+# Remove circular import - we'll import chroma_manager inside the function
+# from .chroma_db import chroma_manager
 
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-ada-002")
 GENERATION_MODEL = os.getenv("GENERATION_MODEL", "gpt-4o-mini")
@@ -39,6 +40,9 @@ async def embed(texts: List[str]) -> List[List[float]]:
 
 async def retrieve(query_text: str, top_k: int = TOP_K) -> List[Tuple[str, float]]:
     """Retrieve relevant documents using vector similarity search."""
+    # Import here to avoid circular imports
+    from .chroma_db import chroma_manager
+    
     qvec = (await embed([query_text]))[0]
     
     # Use ChromaDB for vector similarity search
