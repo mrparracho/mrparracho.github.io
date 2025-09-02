@@ -2,8 +2,7 @@
 
 // Streaming TTS class for real-time voice streaming
 class StreamingTTS {
-    constructor(apiKey, voiceId, modelId) {
-        this.apiKey = apiKey;
+    constructor(voiceId, modelId) {
         this.voiceId = voiceId;
         this.modelId = modelId;
         this.ws = null;
@@ -12,7 +11,20 @@ class StreamingTTS {
     
     async start() {
         try {
-    
+            // Check if TTS is enabled
+            if (!window.isFeatureEnabled('tts')) {
+                console.warn('⚠️ TTS feature is disabled');
+                this.showFeatureDisabledMessage();
+                return;
+            }
+            
+            // Get API key from config
+            const apiKey = window.getConfig('elevenLabsApiKey');
+            if (!apiKey) {
+                console.warn('⚠️ ElevenLabs API key not configured');
+                this.showApiKeyWarning();
+                return;
+            }
             
             // Initialize audio context
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -28,7 +40,7 @@ class StreamingTTS {
             }
             
             // Connect to ElevenLabs WebSocket
-            const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.modelId}&output_format=pcm_22050&xi-api-key=${this.apiKey}`;
+            const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.modelId}&output_format=pcm_22050&xi-api-key=${apiKey}`;
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = () => {
@@ -80,6 +92,52 @@ class StreamingTTS {
         } catch (error) {
             console.error('❌ Error starting streaming TTS:', error);
         }
+    }
+    
+    showFeatureDisabledMessage() {
+        const message = document.createElement('div');
+        message.className = 'feature-disabled-message';
+        message.innerHTML = `
+            <p>🔇 Voice features are currently disabled</p>
+            <p>This feature requires server-side configuration</p>
+        `;
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #000;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        document.body.appendChild(message);
+        setTimeout(() => message.remove(), 5000);
+    }
+    
+    showApiKeyWarning() {
+        const warning = document.createElement('div');
+        warning.className = 'api-key-warning';
+        warning.innerHTML = `
+            <p>⚠️ ElevenLabs API key not configured</p>
+            <p>Please check your configuration</p>
+        `;
+        warning.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(220, 53, 69, 0.9);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        document.body.appendChild(warning);
+        setTimeout(() => warning.remove(), 5000);
     }
     
     async sendText(text) {
@@ -550,7 +608,7 @@ class ElevenLabsConversationalAI {
                                     
                                     try {
                                         // Initialize streaming TTS
-                                        streamingTTS = new StreamingTTS(this.elevenLabsApiKey, this.elevenLabsVoiceId, this.elevenLabsModel);
+                                        streamingTTS = new StreamingTTS(this.elevenLabsVoiceId, this.elevenLabsModel);
                                         await streamingTTS.start();
                                         
                                         // Send initial text

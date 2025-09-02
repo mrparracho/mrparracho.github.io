@@ -1,10 +1,10 @@
 import os
 import json
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
-from fastapi.responses import HTMLResponse
 
 # Load environment variables first
 load_dotenv()
@@ -36,6 +36,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files for RAG manager UI
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 
 @app.get("/health")
 async def health_check():
@@ -45,7 +48,7 @@ async def health_check():
     
     return {
         "status": status, 
-        "service": "miguel-rag",
+        "service": "my-rag",
         "message": message,
         "openai_configured": oclient is not None
     }
@@ -61,6 +64,16 @@ async def root():
     except FileNotFoundError:
         return HTMLResponse(content="<h1>Portfolio chat interface not found</h1>", status_code=404)
 
+@app.get("/rag-manager", response_class=HTMLResponse)
+async def rag_manager():
+    """Serve the RAG document manager UI."""
+    try:
+        with open("app/static/rag_manager.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>RAG Manager not found</h1>", status_code=404)
+
 
 @app.get("/api")
 async def api_info():
@@ -72,7 +85,14 @@ async def api_info():
         "openai_configured": oclient is not None,
         "endpoints": {
             "GET /": "Test chat interface",
+            "GET /rag-manager": "RAG document manager UI",
             "POST /ask": "Streaming RAG question answering",
+            "POST /upload-document": "Upload document to RAG",
+            "GET /documents": "List uploaded documents",
+            "DELETE /documents/{id}": "Delete document",
+            "POST /reingest": "Re-ingest all documents",
+            "POST /reset-collection": "Reset collection",
+            "GET /collection-info": "Get collection statistics",
             "GET /health": "Health check",
             "GET /docs": "API documentation"
         }
@@ -155,6 +175,76 @@ async def ask(payload: dict):
         import traceback
         traceback.print_exc()
         raise HTTPException(500, f"Error processing question: {e}")
+
+
+# Document Management Endpoints
+@app.post("/upload-document")
+async def upload_document(file: UploadFile = File(...)):
+    """Upload a document to the RAG system."""
+    try:
+        from .document_manager import document_manager
+        result = await document_manager.upload_document(file)
+        return result
+    except Exception as e:
+        raise HTTPException(500, f"Error uploading document: {str(e)}")
+
+
+@app.get("/documents")
+async def list_documents():
+    """Get list of all uploaded documents."""
+    try:
+        from .document_manager import document_manager
+        documents = await document_manager.get_documents()
+        return documents
+    except Exception as e:
+        raise HTTPException(500, f"Error listing documents: {str(e)}")
+
+
+@app.delete("/documents/{doc_id}")
+async def delete_document(doc_id: str):
+    """Delete a specific document."""
+    try:
+        from .document_manager import document_manager
+        success = await document_manager.delete_document(doc_id)
+        if success:
+            return {"message": "Document deleted successfully"}
+        else:
+            raise HTTPException(404, "Document not found")
+    except Exception as e:
+        raise HTTPException(500, f"Error deleting document: {str(e)}")
+
+
+@app.post("/reingest")
+async def reingest_documents():
+    """Re-ingest all documents."""
+    try:
+        from .document_manager import document_manager
+        result = await document_manager.reingest_all()
+        return result
+    except Exception as e:
+        raise HTTPException(500, f"Error re-ingesting documents: {str(e)}")
+
+
+@app.post("/reset-collection")
+async def reset_collection():
+    """Reset the entire collection."""
+    try:
+        from .document_manager import document_manager
+        result = await document_manager.reset_collection()
+        return result
+    except Exception as e:
+        raise HTTPException(500, f"Error resetting collection: {str(e)}")
+
+
+@app.get("/collection-info")
+async def get_collection_info():
+    """Get collection statistics."""
+    try:
+        from .document_manager import document_manager
+        stats = await document_manager.get_collection_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(500, f"Error getting collection info: {str(e)}")
 
 
 if __name__ == "__main__":

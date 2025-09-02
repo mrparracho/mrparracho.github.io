@@ -65,8 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
         addTypingIndicator();
         
         try {
-            // Connect to your local RAG API
-            const response = await fetch('https://mrparracho-github-io.onrender.com/ask', {
+            // Connect to RAG API from config
+            const ragBackendUrl = window.getConfig('ragBackendUrl', 'http://localhost:8000');
+            const response = await fetch(`${ragBackendUrl}/ask`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

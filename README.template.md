@@ -1,16 +1,18 @@
-# 🚀 Portfolio Template - AI-Powered Portfolio
+# 🚀 [Your Name] - Portfolio Template
 
-A modern, interactive portfolio website template with AI features including ElevenLabs TTS/STT and OpenAI RAG integration. Built with cutting-edge web technologies and designed to impress hiring managers and recruiters.
+A modern, interactive portfolio website showcasing expertise in [Your Specialization]. Built with cutting-edge web technologies and designed to impress hiring managers and recruiters.
 
-**Template Status**: Ready for customization and deployment
+**Live Demo**: [yourusername.github.io](https://yourusername.github.io)
 
 ## ✨ Features
 
-🎨 **Modern Dark Theme** - Professional blue accent color scheme with neural network aesthetics  
+🎨 **Modern Dark Theme** - Professional [color] accent color scheme with neural network aesthetics  
 🤖 **AI-Focused Design** - Interactive neural network animations and tech-inspired visuals  
 📱 **Fully Responsive** - Optimized for all devices and screen sizes  
 ⚡ **Performance Optimized** - Fast loading with smooth animations and lazy loading  
 🎯 **Hiring-Focused** - Designed to showcase technical skills and leadership experience  
+🔊 **Voice Integration** - ElevenLabs TTS/STT for interactive voice features  
+🧠 **AI Chat Assistant** - RAG-powered portfolio assistant with OpenAI integration  
 
 ### 🔥 Interactive Elements
 
@@ -21,6 +23,7 @@ A modern, interactive portfolio website template with AI features including Elev
 * **Smooth Scroll Animations** throughout the site
 * **Loading Screen** with professional neural network animation
 * **Mobile-First Navigation** with hamburger menu
+* **Voice-Enabled Chat** with AI portfolio assistant
 
 ## 🛠️ Tech Stack
 
@@ -30,28 +33,47 @@ A modern, interactive portfolio website template with AI features including Elev
 * **Fonts**: Inter (UI), JetBrains Mono (code)
 * **Animations**: CSS Keyframes, Intersection Observer API
 * **Particles**: Particles.js for interactive background
-* **Deployment**: GitHub Pages with Jekyll
+* **AI Integration**: ElevenLabs TTS/STT, OpenAI GPT-4, RAG system
+* **Deployment**: GitHub Pages with automated builds
 
 ## 🚀 Quick Deploy
 
 This portfolio is ready to deploy to GitHub Pages:
 
 1. **Fork this repository** or use as a template
-2. **Enable GitHub Pages** in Settings → Pages
-3. **Select source**: Deploy from branch `main` / `root`
-4. **Wait 2-3 minutes** for deployment
-5. **Visit**: `https://yourusername.github.io/`
+2. **Set up GitHub Secrets** in Settings → Secrets and variables → Actions:
+   - `ELEVENLABS_API_KEY`: Your ElevenLabs API key
+   - `RAG_BACKEND_URL`: Your backend URL (optional)
+   - `OPENAI_API_KEY`: Your OpenAI API key (optional)
+   - `PERSONAL_NAME`: Your full name
+   - `PERSONAL_EMAIL`: Your email address
+   - `PERSONAL_LINKEDIN`: Your LinkedIn profile URL
+3. **Enable GitHub Pages** in Settings → Pages
+4. **Select source**: Deploy from branch `gh-pages`
+5. **Wait for build** to complete (check Actions tab)
+6. **Visit**: `https://yourusername.github.io`
+
+### 🔧 Template Customization
+
+The build process automatically customizes your portfolio:
+
+- **Personal Information**: Name, email, and LinkedIn profile
+- **Content Security Policy**: RAG backend URL integration
+- **Configuration**: API keys and feature flags
+- **HTML Content**: Dynamic title and meta tags
+- **RAG System**: Documents ingested via backend UI (not stored in repo)
+
+All customization happens during the GitHub Actions build, keeping your repository clean and template-ready.
 
 ## 📝 Customization Guide
 
 ### Personal Information
 
-Edit these sections in `index.html`:
+The portfolio automatically uses information from your GitHub Secrets. To customize:
 
-* **Hero Section** (lines 65-85): Update name, title, and description
-* **About Section** (lines 105-130): Modify experience summary and stats
-* **Experience Timeline** (lines 225-290): Update job history and companies
-* **Contact Information**: Update email, LinkedIn, and GitHub links
+1. **Update GitHub Secrets** with your information
+2. **Push to main branch** to trigger rebuild
+3. **Personal information** will be automatically injected
 
 ### Projects
 
@@ -84,12 +106,34 @@ Customize the color scheme in `static/css/main.css`:
 
 ```css
 :root {
-    --primary: #00a8ff;      /* Main blue accent */
-    --accent: #64b5f6;       /* Light blue */
+    --primary: #00a8ff;      /* Main accent color */
+    --accent: #64b5f6;       /* Light accent */
     --bg-primary: #0a0a0a;   /* Dark background */
     --bg-secondary: #1a1a1a; /* Secondary background */
 }
 ```
+
+## 🔧 Backend Setup (Optional)
+
+For RAG functionality, deploy the included FastAPI backend:
+
+1. **Navigate to backend directory**: `cd backend/fastapi-rag`
+2. **Install dependencies**: `pip install -r requirements.txt`
+3. **Set environment variables**:
+   ```bash
+   OPENAI_API_KEY=your_openai_key
+   ELEVENLABS_API_KEY=your_elevenlabs_key
+   ```
+4. **Run the server**: `uvicorn app.main:app --reload`
+5. **Update RAG_BACKEND_URL** in GitHub Secrets
+6. **Access RAG Manager**: Visit `/rag-manager` for document management
+
+### RAG Document Management
+After deployment, users can:
+- **Upload documents** via the web UI at `/rag-manager`
+- **Manage knowledge base** with drag-and-drop interface
+- **Monitor statistics** and collection health
+- **Perform operations** like re-ingestion and reset
 
 ## 📱 Mobile Optimization
 
@@ -109,6 +153,7 @@ This portfolio is specifically designed to impress hiring managers:
 * **Experience Timeline** with company details and tech stacks
 * **Modern Tech Stack** demonstrating frontend development skills
 * **Performance Focus** showing attention to detail and optimization
+* **AI Integration** showcasing cutting-edge technology skills
 
 ## 📊 Performance Metrics
 
@@ -122,14 +167,17 @@ This portfolio is specifically designed to impress hiring managers:
 
 ```bash
 # Clone the repository
-git clone https://github.com/mrparracho/mrparracho.github.io.git
-cd mrparracho.github.io
+git clone https://github.com/yourusername/portfolio-template.git
+cd portfolio-template
 
-# Serve locally with Python
+# Install dependencies
+npm install
+
+# Serve locally
+npm run dev
+
+# Or with Python
 python -m http.server 8000
-
-# Or with Node.js
-npx serve .
 
 # Visit http://localhost:8000
 ```
@@ -137,22 +185,26 @@ npx serve .
 ## 📁 Project Structure
 
 ```
-mrparracho.github.io/
+portfolio-template/
 ├── index.html                 # Main portfolio page
 ├── projects.json              # Project data and metadata
-├── _config.yml                # Jekyll configuration
-├── README.md                  # This documentation
+├── package.json               # Node.js dependencies
+├── .github/workflows/         # GitHub Actions build workflow
+├── README.template.md         # This template file
 ├── static/
 │   ├── css/
 │   │   └── main.css          # All styling and animations
 │   ├── js/
 │   │   ├── main.js           # Interactive functionality
-│   │   └── particles.min.js  # Particles background library
+│   │   ├── config.template.js # Configuration template
+│   │   ├── rag-chat.js       # RAG chat functionality
+│   │   └── elevenlabs-integration.js # Voice features
 │   ├── images/
 │   │   ├── photo.svg         # Profile photo placeholder
 │   │   └── projects/         # Project images
 │   └── favicon/
 │       └── favicon.svg       # Site icon
+├── backend/                   # Optional FastAPI backend
 └── .gitignore                # Git ignore patterns
 ```
 
@@ -165,6 +217,7 @@ This portfolio balances:
 * **Modern web standards** demonstrating current development skills
 * **User experience** across all devices and screen sizes
 * **Performance optimization** showing attention to detail
+* **AI integration** showcasing cutting-edge technology skills
 
 ## 🚀 Deployment Options
 
@@ -174,6 +227,7 @@ This portfolio balances:
 ✅ **Automatic deployments** on git push  
 ✅ **HTTPS by default** for security  
 ✅ **Integrated with GitHub** workflow  
+✅ **Environment-based configuration** via GitHub Secrets  
 
 ### Alternative Platforms
 
@@ -181,11 +235,19 @@ This portfolio balances:
 * **Vercel**: Git-based deployment with preview URLs
 * **Surge.sh**: CLI deployment for static sites
 
+## 🔒 Security Features
+
+* **No hardcoded API keys** in repository
+* **Environment-based configuration** via GitHub Secrets
+* **Secure API key injection** during build time
+* **Personal information protection** through environment variables
+* **Clean repository** safe for open source
+
 ## 📞 Contact & Support
 
-* **Portfolio**: [mrparracho.github.io](https://mrparracho.github.io)
-* **GitHub**: [github.com/mrparracho](https://github.com/mrparracho)
-* **Email**: your.email@example.com (update in HTML)
+* **Portfolio**: [yourusername.github.io](https://yourusername.github.io)
+* **GitHub**: [github.com/yourusername](https://github.com/yourusername)
+* **Email**: [your.email@example.com](mailto:your.email@example.com)
 
 ## 🤝 Contributing
 
@@ -205,3 +267,25 @@ This project is open source and available under the [MIT License](LICENSE).
 **Built with ❤️ for the tech community**
 
 *Showcase your skills, impress recruiters, and land your dream job with this modern portfolio template.*
+
+## 🔄 Migration from Personal Portfolio
+
+If you're migrating from a personal portfolio:
+
+1. **Backup your personal data** (CV, FAQ, etc.)
+2. **Set up GitHub Secrets** with your information
+3. **Push to trigger rebuild** with your data
+4. **Verify functionality** on deployed site
+5. **Clean up repository** by removing personal files
+
+## 🎯 Next Steps
+
+1. **Fork this repository**
+2. **Set up GitHub Secrets** with your information
+3. **Customize projects.json** with your projects
+4. **Deploy to GitHub Pages**
+5. **Share your portfolio** with the world!
+
+---
+
+**Happy coding! 🚀**

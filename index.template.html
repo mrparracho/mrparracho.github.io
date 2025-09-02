@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self' https://api.elevenlabs.io wss://api.elevenlabs.io {{RAG_BACKEND_URL}};">
+    <title>{{PERSONAL_NAME}} - Tech Lead | Data | AI</title>
+    <meta name="description" content="Tech Lead specializing in Data Engineering and Artificial Intelligence. Building scalable solutions and leading technical teams.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="static/favicon/favicon.svg">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="static/css/main.css?v=1.1">
+</head>
+<body>
+    <!-- Template Placeholders -->
+    <!-- 
+    This file shows the template structure. The following placeholders will be replaced during build:
+    
+    {{PERSONAL_NAME}} - Your full name
+    {{RAG_BACKEND_URL}} - Your RAG backend URL (or * for wildcard)
+    
+    The GitHub Actions workflow will automatically replace these placeholders with your actual information
+    from GitHub Secrets during the build process.
+    -->
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="neural-network">
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="node"></div>
+                <div class="connection"></div>
+                <div class="connection"></div>
+            </div>
+            <h2>Loading Portfolio...</h2>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">{{PERSONAL_NAME}}</span>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#experience" class="nav-link">Experience</a></li>
+                <li><a href="#projects" class="nav-link">Projects</a></li>
+                <li><a href="#skills" class="nav-link">Skills</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    Hi, I'm <span class="highlight">{{PERSONAL_NAME}}</span>
+                </h1>
+                <p class="hero-subtitle" id="typing-text">Tech Lead</p>
+                <p class="hero-description">
+                    Tech Lead specializing in Data Engineering and Artificial Intelligence. 
+                    Building scalable solutions and leading technical teams.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="scrollToSection('projects')">
+                        View My Work
+                    </button>
+                    <button class="btn btn-secondary" id="start-ai-chat">
+                        Start Conversation
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div id="ai-sphere" class="ai-sphere"></div>
+        </div>
+    </section>
+
+    <!-- Template Information -->
+    <div class="template-info" style="display: none;">
+        <p>This is a template portfolio. Customize it with your information by setting GitHub Secrets.</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+            }
+        }
+    </script>
+    <script src="static/js/config.js"></script>
+    <script src="static/js/main.js"></script>
+    <script src="static/js/rag-chat.js"></script>
+    <script src="static/js/elevenlabs-integration.js"></script>
+</body>
+</html>

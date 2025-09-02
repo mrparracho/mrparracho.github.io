@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Document Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00a8ff, #64b5f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00a8ff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .upload-section, .documents-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #00a8ff;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(0, 168, 255, 0.3);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #00a8ff;
+            background: rgba(0, 168, 255, 0.05);
+        }
+
+        .upload-area.dragover {
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #00a8ff;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #a0a0a0;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #00a8ff, #64b5f6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            color: #00a8ff;
+        }
+
+        .file-details h4 {
+            margin-bottom: 5px;
+        }
+
+        .file-details p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #00a8ff;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .operations-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .operations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .operation-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .operation-icon {
+            font-size: 2rem;
+            color: #00a8ff;
+            margin-bottom: 15px;
+        }
+
+        .operation-title {
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .operation-desc {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #00a8ff, #64b5f6);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            color: #2ecc71;
+        }
+
+        .status-error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+
+        .status-info {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .operations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 RAG Document Manager</h1>
+            <p>Manage your AI portfolio assistant's knowledge base</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-docs">0</div>
+                <div class="stat-label">Total Documents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-chunks">0</div>
+                <div class="stat-label">Total Chunks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="collection-size">0 KB</div>
+                <div class="stat-label">Collection Size</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="last-updated">-</div>
+                <div class="stat-label">Last Updated</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Document Upload Section -->
+            <div class="upload-section">
+                <h2 class="section-title">📤 Upload Documents</h2>
+                
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Drag & drop files here or click to browse</div>
+                    <div class="upload-text">Supports: .md, .txt, .pdf</div>
+                    <input type="file" id="file-input" class="file-input" multiple accept=".md,.txt,.pdf">
+                </div>
+
+                <button class="upload-btn" onclick="document.getElementById('file-input').click()">
+                    Choose Files
+                </button>
+
+                <div class="file-list" id="file-list"></div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="documents-section">
+                <h2 class="section-title">📚 Current Documents</h2>
+                <div id="documents-list">
+                    <p style="color: #a0a0a0; text-align: center; padding: 40px;">
+                        No documents uploaded yet
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operations Section -->
+        <div class="operations-section">
+            <h2 class="section-title">⚙️ System Operations</h2>
+            
+            <div class="operations-grid">
+                <div class="operation-card">
+                    <div class="operation-icon">🔄</div>
+                    <h3 class="operation-title">Re-ingest All</h3>
+                    <p class="operation-desc">Process all documents and update embeddings</p>
+                    <button class="btn btn-primary" onclick="reingestDocuments()">
+                        Start Re-ingestion
+                    </button>
+                </div>
+
+                <div class="operation-card">
+                    <div class="operation-icon">🗑️</div>
+                    <h3 class="operation-title">Reset Collection</h3>
+                    <p class="operation-desc">Clear all documents and start fresh</p>
+                    <button class="btn btn-danger" onclick="resetCollection()">
+                        Reset Collection
+                    </button>
+                </div>
+
+                <div class="operation-card">
+                    <div class="operation-icon">📊</div>
+                    <h3 class="operation-title">Refresh Stats</h3>
+                    <p class="operation-desc">Update collection statistics</p>
+                    <button class="btn btn-secondary" onclick="refreshStats()">
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="operation-card">
+                    <div class="operation-icon">🧪</div>
+                    <h3 class="operation-title">Test RAG</h3>
+                    <p class="operation-desc">Test the RAG system with a sample query</p>
+                    <button class="btn btn-secondary" onclick="testRAG()">
+                        Test Query
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress and Status -->
+        <div class="progress-bar" id="progress-bar" style="display: none;">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div id="status-message"></div>
+    </div>
+
+    <script>
+        // Global state
+        let currentFiles = [];
+        let isProcessing = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDragAndDrop();
+            refreshStats();
+            loadDocuments();
+        });
+
+        // Drag and drop setup
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        // Handle file selection
+        function handleFiles(files) {
+            currentFiles = Array.from(files);
+            displayFileList();
+        }
+
+        // Display selected files
+        function displayFileList() {
+            const fileList = document.getElementById('file-list');
+            if (currentFiles.length === 0) {
+                fileList.innerHTML = '';
+                return;
+            }
+
+            fileList.innerHTML = currentFiles.map((file, index) => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <h4>${file.name}</h4>
+                            <p>${(file.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary" onclick="uploadFile(${index})">
+                            Upload
+                        </button>
+                        <button class="btn btn-danger" onclick="removeFile(${index})">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Remove file from list
+        function removeFile(index) {
+            currentFiles.splice(index, 1);
+            displayFileList();
+        }
+
+        // Upload single file
+        async function uploadFile(index) {
+            const file = currentFiles[index];
+            if (!file) return;
+
+            try {
+                showStatus('Uploading ' + file.name + '...', 'info');
+                showProgress();
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/upload-document', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                showStatus(`Successfully uploaded ${file.name}`, 'success');
+                
+                // Remove file from list and refresh
+                currentFiles.splice(index, 1);
+                displayFileList();
+                refreshStats();
+                loadDocuments();
+                
+            } catch (error) {
+                showStatus(`Error uploading ${file.name}: ${error.message}`, 'error');
+            } finally {
+                hideProgress();
+            }
+        }
+
+        // Re-ingest all documents
+        async function reingestDocuments() {
+            if (isProcessing) return;
+            
+            try {
+                isProcessing = true;
+                showStatus('Re-ingesting all documents...', 'info');
+                showProgress();
+
+                const response = await fetch('/reingest', {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Re-ingestion failed: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                showStatus('Successfully re-ingested all documents', 'success');
+                refreshStats();
+                loadDocuments();
+                
+            } catch (error) {
+                showStatus(`Error during re-ingestion: ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+                hideProgress();
+            }
+        }
+
+        // Reset collection
+        async function resetCollection() {
+            if (!confirm('Are you sure you want to reset the entire collection? This will delete all documents and cannot be undone.')) {
+                return;
+            }
+
+            if (isProcessing) return;
+            
+            try {
+                isProcessing = true;
+                showStatus('Resetting collection...', 'info');
+                showProgress();
+
+                const response = await fetch('/reset-collection', {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Reset failed: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                showStatus('Successfully reset collection', 'success');
+                refreshStats();
+                loadDocuments();
+                
+            } catch (error) {
+                showStatus(`Error resetting collection: ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+                hideProgress();
+            }
+        }
+
+        // Refresh statistics
+        async function refreshStats() {
+            try {
+                const response = await fetch('/collection-info');
+                if (response.ok) {
+                    const info = await response.json();
+                    
+                    document.getElementById('total-docs').textContent = info.total_documents || 0;
+                    document.getElementById('total-chunks').textContent = info.total_chunks || 0;
+                    document.getElementById('collection-size').textContent = formatBytes(info.collection_size || 0);
+                    document.getElementById('last-updated').textContent = info.last_updated || '-';
+                }
+            } catch (error) {
+                console.error('Error refreshing stats:', error);
+            }
+        }
+
+        // Load documents list
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/documents');
+                if (response.ok) {
+                    const documents = await response.json();
+                    displayDocuments(documents);
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            }
+        }
+
+        // Display documents
+        function displayDocuments(documents) {
+            const documentsList = document.getElementById('documents-list');
+            
+            if (!documents || documents.length === 0) {
+                documentsList.innerHTML = '<p style="color: #a0a0a0; text-align: center; padding: 40px;">No documents uploaded yet</p>';
+                return;
+            }
+
+            documentsList.innerHTML = documents.map(doc => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <h4>${doc.filename}</h4>
+                            <p>${doc.chunk_count} chunks • ${formatBytes(doc.file_size)} • Uploaded ${doc.upload_date}</p>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-danger" onclick="deleteDocument('${doc.id}')">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete document
+        async function deleteDocument(docId) {
+            if (!confirm('Are you sure you want to delete this document?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/documents/${docId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showStatus('Document deleted successfully', 'success');
+                    refreshStats();
+                    loadDocuments();
+                } else {
+                    throw new Error('Failed to delete document');
+                }
+            } catch (error) {
+                showStatus(`Error deleting document: ${error.message}`, 'error');
+            }
+        }
+
+        // Test RAG system
+        async function testRAG() {
+            try {
+                showStatus('Testing RAG system...', 'info');
+                
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: 'What can you tell me about the portfolio owner?'
+                    })
+                });
+
+                if (response.ok) {
+                    showStatus('RAG system is working correctly!', 'success');
+                } else {
+                    throw new Error('RAG test failed');
+                }
+            } catch (error) {
+                showStatus(`RAG test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility functions
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showProgress() {
+            document.getElementById('progress-bar').style.display = 'block';
+            document.getElementById('progress-fill').style.width = '0%';
+            
+            // Animate progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                document.getElementById('progress-fill').style.width = progress + '%';
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+            }, 200);
+        }
+
+        function hideProgress() {
+            document.getElementById('progress-fill').style.width = '100%';
+            setTimeout(() => {
+                document.getElementById('progress-bar').style.display = 'none';
+            }, 500);
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

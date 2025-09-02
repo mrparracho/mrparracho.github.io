@@ -1,0 +1,93 @@
+name: Build and Deploy Portfolio
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Create build configuration
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          RAG_BACKEND_URL: ${{ secrets.RAG_BACKEND_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Create config file with environment variables
+          cat > static/js/config.js << 'EOF'
+          window.APP_CONFIG = {
+            elevenLabsApiKey: '${{ secrets.ELEVENLABS_API_KEY }}',
+            ragBackendUrl: '${{ secrets.RAG_BACKEND_URL }}',
+            openaiApiKey: '${{ secrets.OPENAI_API_KEY }}',
+            features: {
+              tts: ${{ secrets.ELEVENLABS_API_KEY != '' }},
+              stt: ${{ secrets.ELEVENLABS_API_KEY != '' }},
+              rag: ${{ secrets.OPENAI_API_KEY != '' }}
+            },
+            personalInfo: {
+              name: '${{ secrets.PERSONAL_NAME || 'Your Name' }}',
+              email: '${{ secrets.PERSONAL_EMAIL || 'your.email@example.com' }}',
+              linkedin: '${{ secrets.PERSONAL_LINKEDIN || 'https://linkedin.com/in/your-profile' }}'
+            },
+
+          };
+          EOF
+          
+          # Update HTML with RAG backend URL
+          if [ -n "${{ secrets.RAG_BACKEND_URL }}" ]; then
+            # Escape URL for sed replacement
+            ESCAPED_URL=$(echo "${{ secrets.RAG_BACKEND_URL }}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+            sed -i "s/{{RAG_BACKEND_URL}}/$ESCAPED_URL/g" index.html
+            echo "Updated HTML with RAG backend URL: ${{ secrets.RAG_BACKEND_URL }}"
+          else
+            # Use wildcard if no RAG backend specified
+            sed -i "s/{{RAG_BACKEND_URL}}/*/g" index.html
+            echo "Updated HTML with wildcard for RAG backend"
+          fi
+          
+          # Update personal information in HTML
+          if [ -n "${{ secrets.PERSONAL_NAME }}" ]; then
+            # Escape name for sed replacement
+            ESCAPED_NAME=$(echo "${{ secrets.PERSONAL_NAME }}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+            sed -i "s/{{PERSONAL_NAME}}/$ESCAPED_NAME/g" index.html
+            echo "Updated HTML with personal name: ${{ secrets.PERSONAL_NAME }}"
+          else
+            # Use default name if not specified
+            sed -i "s/{{PERSONAL_NAME}}/Your Name/g" index.html
+            echo "Updated HTML with default name"
+          fi
+          
+          # Update RAG backend URL in HTML
+          if [ -n "${{ secrets.RAG_BACKEND_URL }}" ]; then
+            # Escape URL for sed replacement
+            ESCAPED_URL=$(echo "${{ secrets.RAG_BACKEND_URL }}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+            sed -i "s/{{RAG_BACKEND_URL}}/$ESCAPED_URL/g" index.html
+            echo "Updated HTML with RAG backend URL: ${{ secrets.RAG_BACKEND_URL }}"
+          else
+            # Use wildcard if no RAG backend specified
+            sed -i "s/{{RAG_BACKEND_URL}}/*/g" index.html
+            echo "Updated HTML with wildcard for RAG backend"
+          fi
+          
+          echo "Configuration files updated successfully"
+          
+      - name: Build and deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          force_orphan: true

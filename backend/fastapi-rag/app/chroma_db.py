@@ -99,7 +99,29 @@ class ChromaDBManager:
             name="miguel_documents",
             metadata={"description": "Miguel's RAG document collection"}
         )
-        print("✅ Created new collection")
+        print(f"✅ Created new collection: {self.collection.name}")
+    
+    async def delete_document(self, doc_id: str):
+        """Delete a specific document and its chunks."""
+        try:
+            # Get all chunks for this document
+            results = self.collection.get(
+                where={"doc_id": doc_id},
+                include=["metadatas"]
+            )
+            
+            if results["ids"]:
+                # Delete chunks by their IDs
+                self.collection.delete(ids=results["ids"])
+                print(f"🗑️  Deleted {len(results['ids'])} chunks for document {doc_id}")
+                return True
+            else:
+                print(f"ℹ️  No chunks found for document {doc_id}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error deleting document {doc_id}: {e}")
+            return False
 
 # Global instance
 chroma_manager = ChromaDBManager()
