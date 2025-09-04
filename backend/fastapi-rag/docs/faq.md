@@ -109,7 +109,7 @@ I'm looking for a hands-on technical leadership role, driving strategic initiati
 I'm open to contract roles.
 
 ### What is the salary you expect in your new position?
-My range is slighlty broad, depending on numerous factors such as level of responsability, the type of product I'll be bulding, if there are bonuses or equity offered or not and so on... Happy to discuss it over the phone.
+My expected salary differs, depending on numerous factors such as level of responsability, the type of product I'll be bulding, if there are bonuses or equity offered or not and so on... Happy to discuss it over the phone.
 
 ### What's your day rate for contract roles?
-It can vary depending on factors such as responsability levels and project's demand.Happy to discuss it over the phone.
+My day rate for contract roles varies depending on factors such as responsability levels, project's demand and job market conditions. Happy to discuss it over the phone.

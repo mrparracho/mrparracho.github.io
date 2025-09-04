@@ -8,11 +8,10 @@
 - **Website:** [Work in Progress](https://mrparracho.github.io)
 
 ## Professional Summary
-Tech Lead with 7+ years of experience in Data & AI Engineering, delivering end-to-end solutions across Telecom, FinTech and AdTech.
-Proven track record building high-performance and scalable data platforms, developing and deploying ML models to production, and
-leading teams to drive innovation, cost optimisation, and measurable business impact. Skilled in bridging stakeholders and
-engineering, with expertise spanning MLOps, large-scale data architectures, and AI solution design. Eligible to work in the UK & EU;
-open to relocation to the UAE.
+Tech Lead with 7+ years of experience in Data and 3+ years in ML/AI, delivering end-to-end solutions across Telecom, FinTech and
+AdTech. Proven track record building high-performance and scalable data platforms, developing and deploying ML models to
+production, and leading teams to drive innovation, cost optimisation, and measurable business impact. Skilled in bridging stakeholders
+and engineering, with expertise spanning MLOps, large-scale data architectures, and AI solution design. Eligible to work in the UK.
 
 **Eligible to work in the UK & EU; open to relocation to the UAE.**
 
@@ -33,8 +32,8 @@ open to relocation to the UAE.
 
 ### AI/ML
 - **Deep Learning:** PyTorch, Transformers, TensorFlow
-- **Machine Learning:** Scikit-Learn, HuggingFace
-- **AI Frameworks:** LLMs, RAG, OpenAI, Pydantic, LangChain
+- **Machine Learning:** Scikit-Learn, HuggingFace, Weights&Biases
+- **AI Frameworks:** LLMs, RAG, OpenAI, Pydantic, LangChain, MLflow
 
 ### Cloud/MLOps
 - **Cloud Platforms:** AWS, GCP, Azure
@@ -57,9 +56,24 @@ open to relocation to the UAE.
 
 ## Professional Experience
 
-### Senior Data Engineer | Global Media
+### Applied AI/ML Research Engineer | Machine Learning Institute
+**London, UK | 2025**
+
+- **End-to-End GenAI & ML Systems:** Delivered comprehensive solutions across NLP, information retrieval, RAG, computer vision, audio, and reinforcement learning with human feedback — implementing CI/CD for reproducible training, evaluations and production deployment pipelines.
+
+- **Semantic Search & Retrieval:** Built and trained a scalable semantic search & retrieval system using a Two-Tower (bi-encoder) with contrastive learning; deployed as a service using Redis as Vector DB.
+
+- **Visual Transformer Development:** Developed Visual Transformer Model (Encoder-Decoder architecture) for Image to Sequence real-time applications. Tested and evaluated Pros and Cons between Multi-head Self-Attention and Cross-Attention alongside with the effects of MLP.
+
+- **Multi-Modal AI:** Prototyped and fine-tuned multi-modal models (CLIP ViT encoder + GPT-2 decoder), served via an inference API.
+
+- **LLM Fine-tuning:** Fine-tuned LLMs with PEFT (LoRA) and applied RLHF (PPO, DPO) for summarisation tasks.
+
+### Senior Data & AI Engineer | Global Media
 **London, UK | April 2023 – June 2025**
 
+- **Text-to-SQL Innovation:** Developed and deployed to production Text-to-SQL semantic layer, enabling non-tech Analysts to speed up reporting by 20%
+- **Award-Winning ML Model:** Engineered DAX's award winning ML Model for cross-device attribution, unlocking a new wave of KPIs and revenue
 - **Leadership:** Led a team of engineers, driving an engineering culture of continuous improvement and innovation
 - **Stakeholder Management:** Spearheaded SDLC and stakeholder management, taking business requirements from 0 to 1 in Data & AI domains
 - **Cost Optimization:** Introduced platform-level cost optimisations and governance initiatives on AWS, saving $400,000 YoY
@@ -101,13 +115,23 @@ open to relocation to the UAE.
 - **BEng Electronics, Telecommunications and Computers Engineering**
 
 ## Key Achievements
-- **Leadership & Team Management:** Successfully led engineering teams, driving culture of continuous improvement and innovation
+
+### AI/ML & Research
+- **Advanced AI Systems:** Delivered end-to-end GenAI and ML systems across NLP, RAG, computer vision, and reinforcement learning with human feedback
+- **Semantic Search Innovation:** Built scalable Two-Tower bi-encoder system with contrastive learning, deployed using Redis Vector DB
+- **Multi-Modal AI:** Prototyped and fine-tuned CLIP ViT + GPT-2 models, served via inference API
+- **LLM Optimization:** Applied PEFT (LoRA) and RLHF (PPO, DPO) techniques for LLM fine-tuning and summarization tasks
+- **ML Model Excellence:** Developed Anomaly Detection ML model achieving 94% accuracy, reducing troubleshooting time by 90%
+
+### Leadership & Impact
+- **Team Leadership:** Successfully led engineering teams, driving culture of continuous improvement and innovation
+- **Strategic Value:** Delivered Smart CAPEX system supporting over €10M strategic investment decisions
 - **Cost Optimization:** Introduced platform-level cost optimisations on AWS, saving $400,000 Year over Year
-- **Performance Improvement:** Improved reporting analytics performance, achieving 400x faster results in Snowflake
-- **Data Engineering Efficiency:** Implemented data backfilling solution 25x faster than previous process, enabling intra-day backfills and ML model retraining
-- **Platform Capacity:** Optimised platform performance, increasing Data Platform capacity by 30%
-- **ML Model Accuracy:** Developed and trained Anomaly Detection ML model achieving 94% accuracy
-- **Operational Efficiency:** Reduced client troubleshooting time by 90%, saving €200K in OPEX in year one
-- **Strategic Impact:** Delivered Smart CAPEX system supporting over €10M strategic investment decisions
-- **Compliance & Governance:** Led SFTR pipeline implementation ensuring EU compliance for market transparency and systemic risk supervision
+- **Operational Savings:** Reduced client troubleshooting time by 90%, saving €200K in OPEX in year one
+
+### Technical Performance
+- **Analytics Performance:** Improved reporting analytics performance, achieving 400x faster results in Snowflake
+- **Data Engineering:** Implemented data backfilling solution 25x faster than previous process, enabling intra-day backfills and ML model retraining
+- **Platform Scalability:** Optimised platform performance, increasing Data Platform capacity by 30%
+- **Compliance Excellence:** Led SFTR pipeline implementation ensuring EU compliance for market transparency and systemic risk supervision
 - **Knowledge Transfer:** Provided platform training and knowledge transfer for long-term sustainability of solutions
