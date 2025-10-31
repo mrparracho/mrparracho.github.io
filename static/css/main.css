@@ -859,9 +859,11 @@ section {
 }
 
 .profile-photo {
-    width: 300px;
-    height: 300px;
-    object-fit: cover;
+    max-width: 450px;
+    max-height: 450px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
     transition: var(--transition);
 }
 
