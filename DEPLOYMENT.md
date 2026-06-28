@@ -88,6 +88,52 @@ python3 -m http.server 8000
 
 3. **Visit** `https://yourusername.github.io`
 
+## Backend (RAG + Voice) Deployment
+
+The voice/chat assistant is a FastAPI service in `backend/fastapi-rag/`, deployed
+separately (e.g. Render). **It is excluded from GitHub Pages** via `_config.yml`,
+so the API keys, RAG corpus and CV never get published by the static site.
+
+### Architecture
+
+The browser talks **only** to the backend. The backend (a BFF/proxy) holds every
+secret and forwards to OpenAI and ElevenLabs server-side:
+
+```
+browser ── /ask ──▶ backend ──▶ OpenAI (RAG)
+        ── /tts ──▶ backend ──▶ ElevenLabs (text-to-speech)
+        ── /stt ──▶ backend ──▶ ElevenLabs (speech-to-text)
+```
+
+No ElevenLabs/OpenAI key is ever shipped to the client.
+
+### Render setup
+
+- **Root directory**: `backend/fastapi-rag`
+- **Start command**: `bash start.sh` (installs deps, builds the vector store from
+  `docs/`, then runs uvicorn on `$PORT`)
+- **Environment variables**: copy from `env.example`. At minimum set
+  `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, and `CORS_ORIGINS`
+  (`https://mrparracho.github.io`). Do **not** use `CORS_ORIGINS=*`.
+
+### Vector store
+
+`backend/fastapi-rag/chroma_db/` is a **build artifact** — it is gitignored and
+rebuilt from `docs/*.md` by `scripts/ingest.py` on each deploy. Edit the source
+docs, not the binary index.
+
+### ⚠️ Security follow-ups (one-time, manual)
+
+1. **Rotate the leaked ElevenLabs key.** The old key was committed in client JS
+   and is in git history — it must be revoked in the ElevenLabs dashboard and
+   replaced via the `ELEVENLABS_API_KEY` env var.
+2. **Purge secrets/large blobs from git history.** Removing the key and the
+   ChromaDB binary from the working tree does not remove them from history. Use
+   `git filter-repo` (or BFG) to scrub `static/js/elevenlabs-integration.js`
+   history and `backend/fastapi-rag/chroma_db/`, then force-push.
+3. **Consider removing the CV PDF from the public repo** if it contains personal
+   contact details you don't want indexed.
+
 ## Custom Domain Setup
 
 ### Step 1: Purchase Domain

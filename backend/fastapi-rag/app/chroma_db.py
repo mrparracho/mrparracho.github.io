@@ -1,10 +1,13 @@
-import os
+import logging
 import chromadb
 from chromadb.config import Settings
 from typing import List, Tuple, Dict, Any
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger("miguel-rag.chroma")
+
 
 class ChromaDBManager:
     def __init__(self):
@@ -20,15 +23,14 @@ class ChromaDBManager:
         try:
             # Try to get existing collection
             self.collection = self.client.get_collection(name="miguel_documents")
-            print(f"📚 Using existing collection: {self.collection.name}")
-        except:
+            logger.info("Using existing collection: %s", self.collection.name)
+        except Exception:
             # Create new collection with explicit dimensions
-            print("🆕 Creating new collection...")
+            logger.info("Creating new collection: miguel_documents")
             self.collection = self.client.create_collection(
                 name="miguel_documents",
                 metadata={"description": "Miguel's RAG document collection"}
             )
-            print(f"✅ Created new collection: {self.collection.name}")
     
     async def upsert_documents(self, doc_id: str, chunks: List[str], metadata: Dict[str, Any]):
         """Upsert document chunks into ChromaDB."""
@@ -60,7 +62,7 @@ class ChromaDBManager:
             metadatas=metadatas
         )
         
-        print(f"✅ Upserted {len(chunks)} chunks for {doc_id}")
+        logger.info("Upserted %d chunks for %s", len(chunks), doc_id)
     
     async def search_similar(self, query_embedding: List[float], top_k: int = 6) -> List[Tuple[str, float]]:
         """Search for similar documents using vector similarity."""
@@ -90,16 +92,16 @@ class ChromaDBManager:
         """Reset the collection (useful for testing)."""
         try:
             self.client.delete_collection("miguel_documents")
-            print("🗑️  Deleted existing collection")
-        except:
-            print("ℹ️  No existing collection to delete")
-        
+            logger.info("Deleted existing collection")
+        except Exception:
+            logger.info("No existing collection to delete")
+
         # Create new collection
         self.collection = self.client.create_collection(
             name="miguel_documents",
             metadata={"description": "Miguel's RAG document collection"}
         )
-        print("✅ Created new collection")
+        logger.info("Created new collection")
 
 # Global instance
 chroma_manager = ChromaDBManager()
