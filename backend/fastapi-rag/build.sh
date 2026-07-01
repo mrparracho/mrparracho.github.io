@@ -7,5 +7,8 @@ if ! command -v uv >/dev/null 2>&1; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Run the app. Render (and most PaaS) inject the port via $PORT.
-uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8001}"
+uv sync --frozen
+
+# Build the vector store from docs/. The ChromaDB index is a build artifact and
+# is recreated from source on each deploy.
+uv run python scripts/ingest.py

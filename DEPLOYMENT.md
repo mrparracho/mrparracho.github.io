@@ -110,8 +110,9 @@ No ElevenLabs/OpenAI key is ever shipped to the client.
 ### Render setup
 
 - **Root directory**: `backend/fastapi-rag`
-- **Start command**: `bash start.sh` (installs deps, builds the vector store from
-  `docs/`, then runs uvicorn on `$PORT`)
+- **Build command**: `sh build.sh` (installs deps and builds the vector store from
+  `docs/`)
+- **Start command**: `sh start.sh` (runs uvicorn on `$PORT`)
 - **Environment variables**: copy from `env.example`. At minimum set
   `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, and `CORS_ORIGINS`
   (`https://mrparracho.github.io`). Do **not** use `CORS_ORIGINS=*`.
