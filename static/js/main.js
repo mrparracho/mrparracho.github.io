@@ -667,8 +667,14 @@ function initTalkButton() {
             window.sphereAnimationController.setResponding();
         }
         
-        if (window.elevenLabsAI && window.elevenLabsAI.elevenLabsApiKey) {
+        if (window.elevenLabsAI && typeof window.elevenLabsAI.textToSpeech === 'function') {
+            window.isPlayingWelcome = true;
             await window.elevenLabsAI.textToSpeech(welcomeText);
+        } else {
+            if (statusText) {
+                statusText.textContent = 'Voice not available';
+            }
+            unlockButton();
         }
     }
     

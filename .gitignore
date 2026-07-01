@@ -1,0 +1,25 @@
+# Secrets / environment
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# ChromaDB vector store — a build artifact, generated from docs by scripts/ingest.py.
+# Never commit it (large binaries, and it couples the deploy to a stale index).
+backend/fastapi-rag/chroma_db/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Logs
+*.log

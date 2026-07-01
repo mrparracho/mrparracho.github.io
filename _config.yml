@@ -43,5 +43,12 @@ exclude:
   - vendor
   - .gitignore
   - README.md
+  - DEPLOYMENT.md
   - package.json
   - package-lock.json
+  # Backend service and its data must never be published by GitHub Pages.
+  # (Holds the RAG corpus, CV PDF, ChromaDB and server code.)
+  - backend
+  # Internal/experimental pages — not part of the public site.
+  - orb.html
+  - sphere-test.html

@@ -1,18 +1,28 @@
 import re
 from typing import List, Tuple
-import os
+
 from openai import AsyncOpenAI
 
+from .config import settings
 from .chroma_db import chroma_manager
 
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-ada-002")
-GENERATION_MODEL = os.getenv("GENERATION_MODEL", "gpt-4o-mini")
-RAG_NAMESPACE = os.getenv("RAG_NAMESPACE", "miguel")
-TOP_K = int(os.getenv("TOP_K", "6"))
-
-client = AsyncOpenAI()
+EMBEDDING_MODEL = settings.embedding_model
+GENERATION_MODEL = settings.generation_model
+RAG_NAMESPACE = settings.rag_namespace
+TOP_K = settings.top_k
 
 _sentence_splitter = re.compile(r"(?<=[.!?])\s+")
+
+# Created lazily so importing this module does not require an API key to be set
+# (keeps imports cheap and lets the app boot in a degraded/health-only mode).
+_client: AsyncOpenAI | None = None
+
+
+def get_client() -> AsyncOpenAI:
+    global _client
+    if _client is None:
+        _client = AsyncOpenAI()
+    return _client
 
 
 def chunk_markdown(text: str, max_len: int = 1000) -> List[str]:
@@ -33,14 +43,14 @@ def chunk_markdown(text: str, max_len: int = 1000) -> List[str]:
 
 async def embed(texts: List[str]) -> List[List[float]]:
     """Generate embeddings for a list of texts."""
-    resp = await client.embeddings.create(model=EMBEDDING_MODEL, input=texts)
+    resp = await get_client().embeddings.create(model=EMBEDDING_MODEL, input=texts)
     return [d.embedding for d in resp.data]
 
 
 async def retrieve(query_text: str, top_k: int = TOP_K) -> List[Tuple[str, float]]:
     """Retrieve relevant documents using vector similarity search."""
     qvec = (await embed([query_text]))[0]
-    
+
     # Use ChromaDB for vector similarity search
     results = await chroma_manager.search_similar(qvec, top_k)
     return results

@@ -1,123 +1,5 @@
 // ElevenLabs Conversational AI Integration
 
-// Streaming TTS class for real-time voice streaming
-class StreamingTTS {
-    constructor(apiKey, voiceId, modelId) {
-        this.apiKey = apiKey;
-        this.voiceId = voiceId;
-        this.modelId = modelId;
-        this.ws = null;
-        this.audioContext = null;
-    }
-    
-    async start() {
-        try {
-    
-            
-            // Initialize audio context
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Ensure audio context is resumed for mobile browsers
-            if (this.audioContext.state === 'suspended') {
-                try {
-                    await this.audioContext.resume();
-        
-                } catch (error) {
-                    console.warn('⚠️ Streaming TTS: Could not resume audio context:', error);
-                }
-            }
-            
-            // Connect to ElevenLabs WebSocket
-            const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.modelId}&output_format=pcm_22050&xi-api-key=${this.apiKey}`;
-            this.ws = new WebSocket(wsUrl);
-            
-            this.ws.onopen = () => {
-    
-                
-                // Send initialization message
-                this.ws.send(JSON.stringify({
-                    text: " ",
-                    voice_settings: {
-                        stability: 0.7,
-                        similarity_boost: 0.7,
-                        use_speaker_boost: true
-                    },
-                    generation_config: {
-                        chunk_length_schedule: [50, 90, 120, 150, 200]
-                    }
-                }));
-            };
-            
-            this.ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                if (data.audio) {
-                    // Decode base64 audio and play immediately
-                    const audioData = atob(data.audio);
-                    const audioArray = new Uint8Array(audioData.length);
-                    for (let i = 0; i < audioData.length; i++) {
-                        audioArray[i] = audioData.charCodeAt(i);
-                    }
-                    
-                    this.playAudioChunk(audioArray);
-                }
-                
-                if (data.isFinal) {
-        
-                }
-            };
-            
-            this.ws.onerror = (error) => {
-                console.error('❌ WebSocket error:', error);
-                // Fallback to regular TTS if WebSocket fails
-    
-            };
-            
-            this.ws.onclose = () => {
-    
-            };
-            
-        } catch (error) {
-            console.error('❌ Error starting streaming TTS:', error);
-        }
-    }
-    
-    async sendText(text) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({ text: text }));
-        }
-    }
-    
-    async playAudioChunk(audioArray) {
-        try {
-            // Convert PCM data to audio buffer
-            const audioBuffer = this.audioContext.createBuffer(1, audioArray.length / 2, 22050);
-            const channelData = audioBuffer.getChannelData(0);
-            
-            // Convert 16-bit PCM to float32
-            for (let i = 0; i < audioArray.length; i += 2) {
-                const sample = (audioArray[i] | (audioArray[i + 1] << 8)) / 32768.0;
-                channelData[i / 2] = sample;
-            }
-            
-            // Create audio source and play
-            const source = this.audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(this.audioContext.destination);
-            source.start();
-            
-        } catch (error) {
-            console.error('❌ Error playing audio chunk:', error);
-        }
-    }
-    
-    async close() {
-        if (this.ws) {
-            this.ws.send(JSON.stringify({ text: "", flush: true }));
-            this.ws.close();
-        }
-    }
-}
 
 class ElevenLabsConversationalAI {
     constructor() {
@@ -133,13 +15,14 @@ class ElevenLabsConversationalAI {
         this.audioUnlocked = false; // Track if audio has been unlocked
         this.unlockedAudio = null; // Store unlocked audio element
         
-        // ElevenLabs Configuration
-        this.elevenLabsApiKey = 'sk_e7a2441a1a89bdf683388edc0083242104e50e6aaf4ec79c';
-        this.elevenLabsVoiceId = 'foB7BprNxwUpIFQmq811'; // Default voice ID (Rachel)
-        this.elevenLabsModel = 'eleven_multilingual_v2';
-        
-        // RAG Backend Configuration
-        this.ragBackendUrl = 'https://mrparracho-github-io.onrender.com';
+        // Voice (TTS) and transcription (STT) are proxied through the backend,
+        // so no ElevenLabs API key is ever shipped to the browser. The voice id
+        // and model are configured server-side.
+
+        // Backend (BFF) — handles RAG, text-to-speech and speech-to-text.
+        // Resolved once, centrally, in config.js.
+        this.ragBackendUrl = (window.APP_CONFIG && window.APP_CONFIG.apiBaseUrl)
+            || 'https://mrparracho-github-io.onrender.com';
         
         this.init();
     }
@@ -374,15 +257,8 @@ class ElevenLabsConversationalAI {
             // Create an actual audio file from the blob
             const audioFile = await this.createAudioFile(audioBlob);
             
-            if (this.elevenLabsApiKey) {
-                // Send to real ElevenLabs API
-                await this.sendToElevenLabs(audioFile);
-            } else {
-                // Demo mode
-                setTimeout(() => {
-                    this.handleAIResponse('Demo mode: No API key configured. Please add your ElevenLabs API key for real AI responses.');
-                }, 2000);
-            }
+            // Transcribe via the backend speech-to-text proxy.
+            await this.sendToElevenLabs(audioFile);
             
         } catch (error) {
             console.error('❌ Failed to process audio:', error);
@@ -423,14 +299,10 @@ class ElevenLabsConversationalAI {
             // Create FormData for multipart/form-data request
             const formData = new FormData();
             formData.append('file', audioFile);
-            formData.append('model_id', 'scribe_v1');
-            
-            // Make the API call to ElevenLabs
-            const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+
+            // Transcription is proxied by the backend (key stays server-side).
+            const response = await fetch(`${this.ragBackendUrl}/stt`, {
                 method: 'POST',
-                headers: {
-                    'xi-api-key': this.elevenLabsApiKey
-                },
                 body: formData
             });
             
@@ -543,11 +415,7 @@ class ElevenLabsConversationalAI {
             let fullResponse = '';
             let tokenCount = 0;
             let isComplete = false;
-            let ttsStarted = false;
-            
-            // Initialize streaming TTS
-            let streamingTTS = null;
-            
+
             while (!isComplete) {
                 const { done, value } = await reader.read();
                 if (done) break;
@@ -561,64 +429,19 @@ class ElevenLabsConversationalAI {
                             const data = JSON.parse(line.slice(6));
                             
                             if (data.token) {
-                                // Stream token received
+                                // Stream token received — accumulate text.
                                 fullResponse += data.token;
                                 tokenCount++;
-                    
-                                
-                                // Start streaming TTS as soon as we have 5 tokens
-                                if (tokenCount >= 5 && !ttsStarted) {
-                        
-                                    ttsStarted = true;
-                                    
-                                    try {
-                                        // Initialize streaming TTS
-                                        streamingTTS = new StreamingTTS(this.elevenLabsApiKey, this.elevenLabsVoiceId, this.elevenLabsModel);
-                                        await streamingTTS.start();
-                                        
-                                        // Send initial text
-                                        await streamingTTS.sendText(fullResponse);
-                                        
-                                        // Update status text to show TTS is starting
-                                        const statusText = document.querySelector('.status-text');
-                                        if (statusText) {
-                                            statusText.textContent = 'Speaking...';
-                                        }
-                                    } catch (error) {
-                                        console.error('❌ Streaming TTS failed, falling back to regular TTS:', error);
-                                        streamingTTS = null;
-                                        this.textToSpeech(fullResponse);
-                                    }
-                                } else if (ttsStarted && streamingTTS) {
-                                    // Send new tokens to streaming TTS
-                                    try {
-                                        await streamingTTS.sendText(data.token);
-                                    } catch (error) {
-                                        console.error('❌ Error sending text to streaming TTS:', error);
-                                        // Fallback to regular TTS
-                                        streamingTTS = null;
-                                        this.textToSpeech(fullResponse);
-                                    }
-                                }
-                                
-                                // Keep status text showing "RAG Thinking..." during streaming
+
+                                // Keep status text showing progress during streaming.
                                 const statusText = document.querySelector('.status-text');
-                                if (statusText && !ttsStarted) {
+                                if (statusText) {
                                     statusText.textContent = 'RAG thinking...';
                                 }
                             } else if (data.text) {
-                                // Final response received
+                                // Final response received.
                                 fullResponse = data.text;
                                 isComplete = true;
-                    
-                                
-                                // If TTS hasn't started yet, start it now with the full response
-                                if (!ttsStarted) {
-                                    this.textToSpeech(fullResponse);
-                                } else if (streamingTTS) {
-                                    // Close streaming TTS
-                                    await streamingTTS.close();
-                                }
                             }
                         } catch (e) {
                             // Raw SSE data parsing error
@@ -681,51 +504,25 @@ class ElevenLabsConversationalAI {
         }
         
         try {
-            // Try streaming TTS first for better quality
-            try {
-                await this.streamingTTS(text);
-                return;
-            } catch (streamError) {
-                // Streaming TTS failed, falling back to regular TTS
-            }
-            
-            // Fallback to regular TTS
-            const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${this.elevenLabsVoiceId}`, {
+            // Synthesize speech via the backend TTS proxy (key stays server-side).
+            const response = await fetch(`${this.ragBackendUrl}/tts`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'audio/mpeg',
-                    'Content-Type': 'application/json',
-                    'xi-api-key': this.elevenLabsApiKey
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    text: text,
-                    model_id: this.elevenLabsModel,
-                    voice_settings: {
-                        stability: 0.7,
-                        similarity_boost: 0.7,
-                        style: 0.0,
-                        use_speaker_boost: true
-                    },
-                    generation_config: {
-                        chunk_length_schedule: [50, 90, 120, 150, 200],
-                        temperature: 0.7,
-                        length_penalty: 1.0,
-                        repetition_penalty: 1.0,
-                        top_p: 0.8,
-                        top_k: 40
-                    }
-                })
+                body: JSON.stringify({ text: text })
             });
-            
+
             if (!response.ok) {
                 throw new Error(`TTS API error: ${response.status} ${response.statusText}`);
             }
-            
+
             const audioBlob = await response.blob();
-            
+
             // Play the audio response
             await this.playAudioResponse(audioBlob, text);
-            
+
         } catch (error) {
             console.error('❌ TTS API error:', error);
             
@@ -738,56 +535,6 @@ class ElevenLabsConversationalAI {
             this.isPlaying = false;
             // Continue with next item in queue
             this.processAudioQueue();
-        }
-    }
-    
-    async streamingTTS(text) {
-        try {
-            // Update status text
-            const statusText = document.querySelector('.status-text');
-            if (statusText) {
-                statusText.textContent = 'Answering...';
-            }
-            
-            // Use streaming TTS endpoint
-            const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${this.elevenLabsVoiceId}/stream`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'audio/mpeg',
-                    'Content-Type': 'application/json',
-                    'xi-api-key': this.elevenLabsApiKey
-                },
-                body: JSON.stringify({
-                    text: text,
-                    model_id: this.elevenLabsModel,
-                    voice_settings: {
-                        stability: 0.7,
-                        similarity_boost: 0.7,
-                        style: 0.0,
-                        use_speaker_boost: true
-                    },
-                    generation_config: {
-                        chunk_length_schedule: [50, 90, 120, 150, 200],
-                        temperature: 0.7,
-                        length_penalty: 1.0,
-                        repetition_penalty: 1.0,
-                        top_p: 0.8,
-                        top_k: 40
-                    }
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Streaming TTS API error: ${response.status} ${response.statusText}`);
-            }
-            
-            const audioBlob = await response.blob();
-            
-            // Play the audio response
-            await this.playAudioResponse(audioBlob, text);
-            
-        } catch (error) {
-            throw error;
         }
     }
     
