@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalChatInput = document.getElementById('modal-chat-input');
     const modalSendButton = document.getElementById('modal-send-message');
     const modalChatMessages = document.getElementById('modal-chat-messages');
+    const ragBackendUrl = (window.APP_CONFIG && window.APP_CONFIG.apiBaseUrl)
+        || 'https://mrparracho-github-io.onrender.com';
     
     let isStreaming = false;
     
@@ -65,8 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
         addTypingIndicator();
         
         try {
-            // Connect to your local RAG API
-            const response = await fetch('https://mrparracho-github-io.onrender.com/ask', {
+            // Connect to the RAG API.
+            const response = await fetch(`${ragBackendUrl}/ask`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

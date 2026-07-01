@@ -20,7 +20,9 @@ class ElevenLabsConversationalAI {
         // and model are configured server-side.
 
         // Backend (BFF) — handles RAG, text-to-speech and speech-to-text.
-        this.ragBackendUrl = 'https://mrparracho-github-io.onrender.com';
+        // Resolved once, centrally, in config.js.
+        this.ragBackendUrl = (window.APP_CONFIG && window.APP_CONFIG.apiBaseUrl)
+            || 'https://mrparracho-github-io.onrender.com';
         
         this.init();
     }

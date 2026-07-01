@@ -5,15 +5,46 @@ rest of the codebase can depend on a single, validated `settings` object instead
 of scattered `os.getenv` calls with inconsistent defaults.
 """
 
+import json
 import os
 from functools import lru_cache
-from typing import List
+from typing import Annotated, List
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import NoDecode
 
 
 def _split_csv(value: str) -> List[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _parse_origin_list(value: str | List[str]) -> List[str]:
+    if isinstance(value, list):
+        origins = [str(item).strip() for item in value if str(item).strip()]
+        return _with_local_dev_origins(origins)
+
+    stripped = value.strip()
+    if stripped.startswith("["):
+        parsed = json.loads(stripped)
+        if not isinstance(parsed, list):
+            raise ValueError("CORS_ORIGINS JSON value must be a list")
+        origins = [str(item).strip() for item in parsed if str(item).strip()]
+        return _with_local_dev_origins(origins)
+
+    return _with_local_dev_origins(_split_csv(stripped))
+
+
+def _with_local_dev_origins(origins: List[str]) -> List[str]:
+    for origin in (
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ):
+        if origin not in origins:
+            origins.append(origin)
+    return origins
 
 
 class Settings(BaseSettings):
@@ -36,7 +67,7 @@ class Settings(BaseSettings):
 
     # --- CORS: explicit allow-list, no wildcard in production ---
     # Comma-separated list via CORS_ORIGINS; defaults cover the live site + local dev.
-    cors_origins: List[str] = _split_csv(
+    cors_origins: Annotated[List[str], NoDecode] = _split_csv(
         os.getenv(
             "CORS_ORIGINS",
             "https://mrparracho.github.io,"
@@ -44,6 +75,11 @@ class Settings(BaseSettings):
             "http://localhost:8000,http://127.0.0.1:8000",
         )
     )
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: str | List[str]) -> List[str]:
+        return _parse_origin_list(value)
 
     # --- Rate limiting (per client IP) ---
     rate_limit_ask: str = os.getenv("RATE_LIMIT_ASK", "10/minute")
